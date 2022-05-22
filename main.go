@@ -4,11 +4,12 @@ import (
 	"fmt"
 	"runtime"
 
+	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
 )
 
-const(
-	width = 800
+const (
+	width  = 800
 	height = 600
 )
 
@@ -18,10 +19,18 @@ func main() {
 	window := initGlfw()
 	defer glfw.Terminate()
 
-    for !window.ShouldClose() {
-		window.SwapBuffers()
-		glfw.PollEvents()
-    }
+	initOpenGL()
+
+	for !window.ShouldClose() {
+		draw(window)
+	}
+}
+
+func draw(window *glfw.Window) {
+	gl.Clear(gl.COLOR_BUFFER_BIT)
+
+	window.SwapBuffers()
+	glfw.PollEvents()
 }
 
 func initGlfw() *glfw.Window {
@@ -46,6 +55,13 @@ func initGlfw() *glfw.Window {
 	window.SetKeyCallback(keyCallBack)
 
 	return window
+}
+
+func initOpenGL() {
+	if err := gl.Init(); err != nil {
+		panic((err))
+	}
+	gl.ClearColor(0.118, 0.565, 1.0, 1.0)
 }
 
 func keyCallBack(window *glfw.Window, key glfw.Key, scancode int, action glfw.Action, modifier glfw.ModifierKey) {
