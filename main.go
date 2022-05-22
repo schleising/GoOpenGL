@@ -13,6 +13,9 @@ const (
 	width  = 800
 	height = 600
 
+	vertexSize = 3
+	sizeOfFloat = 4
+
 	vertexShaderSource = `
 	#version 410 core
     layout (location = 0) in vec3 aPos;
@@ -59,7 +62,7 @@ func draw(window *glfw.Window, program uint32, vao uint32) {
 	gl.Clear(gl.COLOR_BUFFER_BIT)
 	gl.UseProgram(program)
 	gl.BindVertexArray(vao)
-	gl.DrawArrays(gl.TRIANGLES, 0, 3)
+	gl.DrawArrays(gl.TRIANGLES, 0, vertexSize)
 
 	window.SwapBuffers()
 	glfw.PollEvents()
@@ -74,7 +77,7 @@ func makeVao(points []float32) uint32 {
 	var vao uint32
 	gl.GenVertexArrays(1, &vao)
 	gl.BindVertexArray(vao)
-	gl.VertexAttribPointer(0, 3, gl.FLOAT, false, 3 * 4, nil)
+	gl.VertexAttribPointer(0, vertexSize, gl.FLOAT, false, vertexSize * sizeOfFloat, nil)
 	gl.EnableVertexAttribArray(0)
 
 	return vao
