@@ -13,10 +13,12 @@ const (
 	width  = 800
 	height = 600
 
-	vertexSize    = 3
-	sizeOfFloat32 = 4
-	sizeOfUint32  = 4
-	numAttributes = 2
+	pointsPerTriangle = 3
+	vertexSize        = 3
+	sizeOfFloat32     = 4
+	sizeOfUint32      = 4
+	numAttributes     = 3
+	numTriangles      = 2
 
 	vertexShaderFile   = "shaders/vertexShader.glsl"
 	fragmentShaderFile = "shaders/fragmentShader.glsl"
@@ -24,10 +26,16 @@ const (
 
 var (
 	vertices = []float32{
-		// positions      // colors
-		0.5, -0.5, 0.0, 1.0, 0.0, 0.0, // bottom right
-		-0.5, -0.5, 0.0, 0.0, 1.0, 0.0, // bottom left
-		0.0, 0.5, 0.0, 0.0, 0.0, 1.0, // top
+		// positions   // colors // texture coords
+		0.5, 0.5, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0, // top right
+		0.5, -0.5, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0, // bottom right
+		-0.5, -0.5, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, // bottom left
+		-0.5, 0.5, 0.0, 1.0, 1.0, 1.0, 0.0, 1.0, 0.0, // top left
+	}
+
+	indices = []uint32{
+		0, 1, 2,
+		0, 2, 3,
 	}
 )
 
@@ -39,7 +47,7 @@ func main() {
 
 	program := initOpenGL()
 
-	vao := makeVao(vertices)
+	vao := makeVao(vertices, indices)
 
 	for !window.ShouldClose() {
 		draw(window, program, vao)
@@ -54,22 +62,27 @@ func draw(window *glfw.Window, program uint32, vao uint32) {
 	gl.UseProgram(program)
 	// gl.Uniform4f(vertexColourLocation, 0.118, float32(greenValue), 1.0, 1.0)
 	gl.BindVertexArray(vao)
-	gl.DrawArrays(gl.TRIANGLES, 0, vertexSize)
+	gl.DrawElements(gl.TRIANGLES, pointsPerTriangle*numTriangles, gl.UNSIGNED_INT, gl.Ptr(nil))
 	gl.BindVertexArray(0)
 
 	window.SwapBuffers()
 	glfw.PollEvents()
 }
 
-func makeVao(points []float32) uint32 {
-	var vbo uint32
-	gl.GenBuffers(1, &vbo)
-	gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
-	gl.BufferData(gl.ARRAY_BUFFER, len(points)*sizeOfFloat32, gl.Ptr(points), gl.STATIC_DRAW)
-
+func makeVao(vertices []float32, indices []uint32) uint32 {
 	var vao uint32
 	gl.GenVertexArrays(1, &vao)
 	gl.BindVertexArray(vao)
+
+	var vbo uint32
+	gl.GenBuffers(1, &vbo)
+	gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
+	gl.BufferData(gl.ARRAY_BUFFER, len(vertices)*sizeOfFloat32, gl.Ptr(vertices), gl.STATIC_DRAW)
+
+	var ebo uint32
+	gl.GenBuffers(1, &ebo)
+	gl.BindBuffer(gl.ELEMENT_ARRAY_BUFFER, ebo)
+	gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, len(indices)*sizeOfUint32, gl.Ptr(indices), gl.STATIC_DRAW)
 
 	var offset uintptr = 0
 	gl.VertexAttribPointerWithOffset(0, vertexSize, gl.FLOAT, false, vertexSize*sizeOfFloat32*numAttributes, offset)
