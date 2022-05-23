@@ -13,33 +13,42 @@ const (
 	width  = 800
 	height = 600
 
-	vertexSize = 3
-	sizeOfFloat = 4
+	vertexSize    = 3
+	sizeOfFloat32 = 4
+	sizeOfUint32  = 4
+	numAttributes = 2
 
 	vertexShaderSource = `
 	#version 410 core
     layout (location = 0) in vec3 aPos;
-    void main()
+    layout (location = 1) in vec3 aColour;
+
+	out vec3 ourColour;
+
+	void main()
     {
        gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);
+	   ourColour = aColour;
     }
 ` + "\x00"
 
 	fragmentShaderSource = `
 	#version 410 core
+	in vec3 ourColour;
 	out vec4 FragColor;
 	void main()
 	{
-		FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);
+		FragColor = vec4(ourColour, 1.0);
 	} 
 ` + "\x00"
 )
 
 var (
-	triangle = []float32{
-		-0.5, -0.5, 0.0,
-		0.0, 0.5, 0.0,
-		0.5, -0.5, 0.0,
+	vertices = []float32{
+		// positions      // colors
+		0.5, -0.5, 0.0, 1.0, 0.0, 0.0, // bottom right
+		-0.5, -0.5, 0.0, 0.0, 1.0, 0.0, // bottom left
+		0.0, 0.5, 0.0, 0.0, 0.0, 1.0, // top
 	}
 )
 
@@ -51,7 +60,7 @@ func main() {
 
 	program := initOpenGL()
 
-	vao := makeVao(triangle)
+	vao := makeVao(vertices)
 
 	for !window.ShouldClose() {
 		draw(window, program, vao)
@@ -59,10 +68,15 @@ func main() {
 }
 
 func draw(window *glfw.Window, program uint32, vao uint32) {
+	// timeValue := glfw.GetTime()
+	// greenValue := (math.Sin(timeValue) / 2.0) + 0.5
+	// vertexColourLocation := gl.GetUniformLocation(program, gl.Str("ourColour\x00"))
 	gl.Clear(gl.COLOR_BUFFER_BIT)
 	gl.UseProgram(program)
+	// gl.Uniform4f(vertexColourLocation, 0.118, float32(greenValue), 1.0, 1.0)
 	gl.BindVertexArray(vao)
 	gl.DrawArrays(gl.TRIANGLES, 0, vertexSize)
+	gl.BindVertexArray(0)
 
 	window.SwapBuffers()
 	glfw.PollEvents()
@@ -72,13 +86,19 @@ func makeVao(points []float32) uint32 {
 	var vbo uint32
 	gl.GenBuffers(1, &vbo)
 	gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
-	gl.BufferData(gl.ARRAY_BUFFER, len(points)*4, gl.Ptr(points), gl.STATIC_DRAW)
+	gl.BufferData(gl.ARRAY_BUFFER, len(points)*sizeOfFloat32, gl.Ptr(points), gl.STATIC_DRAW)
 
 	var vao uint32
 	gl.GenVertexArrays(1, &vao)
 	gl.BindVertexArray(vao)
-	gl.VertexAttribPointer(0, vertexSize, gl.FLOAT, false, vertexSize * sizeOfFloat, nil)
+
+	var offset uintptr = 0
+	gl.VertexAttribPointerWithOffset(0, vertexSize, gl.FLOAT, false, vertexSize*sizeOfFloat32*numAttributes, offset)
 	gl.EnableVertexAttribArray(0)
+
+	offset = vertexSize * sizeOfFloat32
+	gl.VertexAttribPointerWithOffset(1, vertexSize, gl.FLOAT, false, vertexSize*sizeOfFloat32*numAttributes, offset)
+	gl.EnableVertexAttribArray(1)
 
 	return vao
 }
@@ -130,6 +150,12 @@ func initOpenGL() uint32 {
 	gl.UseProgram(prog)
 	gl.DeleteShader(vertexShader)
 	gl.DeleteShader(fragmentShader)
+
+	var nAttributes int32
+	gl.GetIntegerv(gl.MAX_VERTEX_ATTRIBS, &nAttributes)
+	fmt.Println(nAttributes)
+
+	// gl.PolygonMode(gl.FRONT_AND_BACK, gl.LINE)
 
 	return prog
 }
