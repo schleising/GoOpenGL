@@ -18,7 +18,7 @@ const (
 	sizeOfUint32  = 4
 	numAttributes = 2
 
-	vertexShaderFile = "shaders/vertexShader.glsl"
+	vertexShaderFile   = "shaders/vertexShader.glsl"
 	fragmentShaderFile = "shaders/fragmentShader.glsl"
 )
 
