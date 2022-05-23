@@ -13,11 +13,14 @@ const (
 	width  = 800
 	height = 600
 
-	pointsPerTriangle = 3
-	vertexSize        = 3
+	positionSize      = 3
+	colourSize        = 3
+	texCoordSize      = 2
+	vertexSize        = positionSize + colourSize + texCoordSize
 	sizeOfFloat32     = 4
 	sizeOfUint32      = 4
 	numAttributes     = 3
+	pointsPerTriangle = 3
 	numTriangles      = 2
 
 	vertexShaderFile   = "shaders/vertexShader.glsl"
@@ -27,10 +30,10 @@ const (
 var (
 	vertices = []float32{
 		// positions   // colors // texture coords
-		0.5, 0.5, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0, // top right
-		0.5, -0.5, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0, // bottom right
-		-0.5, -0.5, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, // bottom left
-		-0.5, 0.5, 0.0, 1.0, 1.0, 1.0, 0.0, 1.0, 0.0, // top left
+		0.5, 0.5, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, // top right
+		0.5, -0.5, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0, // bottom right
+		-0.5, -0.5, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, // bottom left
+		-0.5, 0.5, 0.0, 1.0, 1.0, 1.0, 0.0, 1.0, // top left
 	}
 
 	indices = []uint32{
@@ -85,11 +88,11 @@ func makeVao(vertices []float32, indices []uint32) uint32 {
 	gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, len(indices)*sizeOfUint32, gl.Ptr(indices), gl.STATIC_DRAW)
 
 	var offset uintptr = 0
-	gl.VertexAttribPointerWithOffset(0, vertexSize, gl.FLOAT, false, vertexSize*sizeOfFloat32*numAttributes, offset)
+	gl.VertexAttribPointerWithOffset(0, positionSize, gl.FLOAT, false, vertexSize*sizeOfFloat32, offset)
 	gl.EnableVertexAttribArray(0)
 
-	offset = vertexSize * sizeOfFloat32
-	gl.VertexAttribPointerWithOffset(1, vertexSize, gl.FLOAT, false, vertexSize*sizeOfFloat32*numAttributes, offset)
+	offset = positionSize * sizeOfFloat32
+	gl.VertexAttribPointerWithOffset(1, colourSize, gl.FLOAT, false, vertexSize*sizeOfFloat32, offset)
 	gl.EnableVertexAttribArray(1)
 
 	return vao
