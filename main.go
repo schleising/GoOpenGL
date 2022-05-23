@@ -65,14 +65,16 @@ func main() {
 }
 
 func draw(window *glfw.Window, program uint32, vao uint32, texture uint32) {
-	// timeValue := glfw.GetTime()
-	// greenValue := (math.Sin(timeValue) / 2.0) + 0.5
-	// vertexColourLocation := gl.GetUniformLocation(program, gl.Str("ourColour\x00"))
 	gl.Clear(gl.COLOR_BUFFER_BIT)
+
+	gl.BindTexture(gl.TEXTURE_2D, texture)
+
 	gl.UseProgram(program)
-	// gl.Uniform4f(vertexColourLocation, 0.118, float32(greenValue), 1.0, 1.0)
+
 	gl.BindVertexArray(vao)
+
 	gl.DrawElements(gl.TRIANGLES, pointsPerTriangle*numTriangles, gl.UNSIGNED_INT, gl.Ptr(nil))
+
 	gl.BindVertexArray(0)
 
 	window.SwapBuffers()
