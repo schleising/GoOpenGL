@@ -3,10 +3,10 @@ package main
 import (
 	"fmt"
 	"runtime"
-	"strings"
 
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
+	"github.com/schleising/GoOpenGL/shaders"
 )
 
 const (
@@ -18,29 +18,8 @@ const (
 	sizeOfUint32  = 4
 	numAttributes = 2
 
-	vertexShaderSource = `
-	#version 410 core
-    layout (location = 0) in vec3 aPos;
-    layout (location = 1) in vec3 aColour;
-
-	out vec3 ourColour;
-
-	void main()
-    {
-       gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);
-	   ourColour = aColour;
-    }
-` + "\x00"
-
-	fragmentShaderSource = `
-	#version 410 core
-	in vec3 ourColour;
-	out vec4 FragColor;
-	void main()
-	{
-		FragColor = vec4(ourColour, 1.0);
-	} 
-` + "\x00"
+	vertexShaderFile = "shaders/vertexShader.glsl"
+	fragmentShaderFile = "shaders/fragmentShader.glsl"
 )
 
 var (
@@ -134,11 +113,11 @@ func initOpenGL() uint32 {
 
 	gl.ClearColor(0.118, 0.565, 1.0, 1.0)
 
-	vertexShader, err := compileShader(vertexShaderSource, gl.VERTEX_SHADER)
+	vertexShader, err := shaders.LoadShader(vertexShaderFile, gl.VERTEX_SHADER)
 	if err != nil {
 		panic(err)
 	}
-	fragmentShader, err := compileShader(fragmentShaderSource, gl.FRAGMENT_SHADER)
+	fragmentShader, err := shaders.LoadShader(fragmentShaderFile, gl.FRAGMENT_SHADER)
 	if err != nil {
 		panic(err)
 	}
@@ -167,27 +146,4 @@ func keyCallBack(window *glfw.Window, key glfw.Key, scancode int, action glfw.Ac
 			window.SetShouldClose(true)
 		}
 	}
-}
-
-func compileShader(source string, shaderType uint32) (uint32, error) {
-	shader := gl.CreateShader(shaderType)
-
-	csources, free := gl.Strs(source)
-	gl.ShaderSource(shader, 1, csources, nil)
-	free()
-	gl.CompileShader(shader)
-
-	var status int32
-	gl.GetShaderiv(shader, gl.COMPILE_STATUS, &status)
-	if status == gl.FALSE {
-		var logLength int32
-		gl.GetShaderiv(shader, gl.INFO_LOG_LENGTH, &logLength)
-
-		log := strings.Repeat("\x00", int(logLength+1))
-		gl.GetShaderInfoLog(shader, logLength, nil, gl.Str(log))
-
-		return 0, fmt.Errorf("failed to compile %v: %v", source, log)
-	}
-
-	return shader, nil
 }
