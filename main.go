@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"runtime"
+	"time"
 
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
@@ -53,14 +54,31 @@ func main() {
 
 	vao := makeVao(vertices, indices)
 
-	texture, err := textures.LoadImage("images/pipeline.png")
+	texture1, err := textures.LoadImage("images/IMG_0033.JPG")
 
 	if err != nil {
 		panic(0)
 	}
 
+	texture2, err := textures.LoadImage("images/pipeline.png")
+
+	if err != nil {
+		panic(0)
+	}
+
+	first := true
+	texture := texture1
+
 	for !window.ShouldClose() {
+		if first {
+			texture = texture1
+			first = false
+		} else {
+			texture = texture2
+			first = true
+		}
 		draw(window, program, vao, texture)
+		time.Sleep(1 * time.Second)
 	}
 }
 
