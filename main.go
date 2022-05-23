@@ -7,6 +7,7 @@ import (
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/schleising/GoOpenGL/shaders"
+	"github.com/schleising/GoOpenGL/textures"
 )
 
 const (
@@ -52,12 +53,18 @@ func main() {
 
 	vao := makeVao(vertices, indices)
 
+	texture, err := textures.LoadImage("images/pipeline.png")
+
+	if err != nil {
+		panic(0)
+	}
+
 	for !window.ShouldClose() {
-		draw(window, program, vao)
+		draw(window, program, vao, texture)
 	}
 }
 
-func draw(window *glfw.Window, program uint32, vao uint32) {
+func draw(window *glfw.Window, program uint32, vao uint32, texture uint32) {
 	// timeValue := glfw.GetTime()
 	// greenValue := (math.Sin(timeValue) / 2.0) + 0.5
 	// vertexColourLocation := gl.GetUniformLocation(program, gl.Str("ourColour\x00"))
@@ -94,6 +101,10 @@ func makeVao(vertices []float32, indices []uint32) uint32 {
 	offset = positionSize * sizeOfFloat32
 	gl.VertexAttribPointerWithOffset(1, colourSize, gl.FLOAT, false, vertexSize*sizeOfFloat32, offset)
 	gl.EnableVertexAttribArray(1)
+
+	offset = (positionSize + colourSize) * sizeOfFloat32
+	gl.VertexAttribPointerWithOffset(2, texCoordSize, gl.FLOAT, false, vertexSize*sizeOfFloat32, offset)
+	gl.EnableVertexAttribArray(2)
 
 	return vao
 }
