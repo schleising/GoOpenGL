@@ -30,17 +30,33 @@ const (
 )
 
 var (
+	// The four vertices of a rectangle
 	vertices = []float32{
-		// positions   // colors // texture coords
-		0.5, 0.5, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, // top right
-		0.5, -0.5, 0.0, 0.0, 1.0, 0.0, 1.0, 1.0, // bottom right
-		-0.5, -0.5, 0.0, 0.0, 0.0, 1.0, 0.0, 1.0, // bottom left
-		-0.5, 0.5, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, // top left
+		// Top Right Vertex
+		0.5, 0.5, 0.0, // Postion
+		1.0, 0.0, 0.0, // Colour
+		1.0, 0.0, // Texture Coord
+
+		// Bottom Right Vertex
+		0.5, -0.5, 0.0, // Postion
+		0.0, 1.0, 0.0, // Colour
+		1.0, 1.0, // Texture Coord
+
+		// Bottom Left Vertex
+		-0.5, -0.5, 0.0, // Postion
+		0.0, 0.0, 1.0, // Colour
+		0.0, 1.0,  // Texture Coord
+		
+		// Top Left Vertex
+		-0.5, 0.5, 0.0, // Postion
+		1.0, 1.0, 1.0, // Colour
+		0.0, 0.0, // Texture Coord
 	}
 
+	// The indices into vertices to make a rectangle from two triangles
 	indices = []uint32{
-		0, 1, 2,
-		0, 2, 3,
+		0, 1, 2, // TR -> BR -> BL
+		0, 2, 3, // TR -> BR -> TL
 	}
 )
 
@@ -70,7 +86,7 @@ func main() {
 	var count uint = 0
 
 	for !window.ShouldClose() {
-		if int(count / 10) % 2 == 0 {
+		if int(count/10)%2 == 0 {
 			texture = texture1
 		} else {
 			texture = texture2
@@ -90,8 +106,8 @@ func draw(window *glfw.Window, program uint32, vao uint32, texture uint32, count
 
 	gl.BindVertexArray(vao)
 
-	dx := gl.GetUniformLocation(program, gl.Str("dx" + "\x00"))
-	gl.Uniform1f(dx, float32(count) / 100.0)
+	dx := gl.GetUniformLocation(program, gl.Str("dx"+"\x00"))
+	gl.Uniform1f(dx, float32(count)/100.0)
 
 	gl.DrawElements(gl.TRIANGLES, pointsPerTriangle*numTriangles, gl.UNSIGNED_INT, gl.Ptr(nil))
 
