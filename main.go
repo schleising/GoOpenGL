@@ -66,23 +66,22 @@ func main() {
 		panic(0)
 	}
 
-	first := true
 	texture := texture1
+	var count uint = 0
 
 	for !window.ShouldClose() {
-		if first {
+		if int(count / 10) % 2 == 0 {
 			texture = texture1
-			first = false
 		} else {
 			texture = texture2
-			first = true
 		}
-		draw(window, program, vao, texture)
-		time.Sleep(1 * time.Second)
+		draw(window, program, vao, texture, count)
+		time.Sleep(50 * time.Millisecond)
+		count++
 	}
 }
 
-func draw(window *glfw.Window, program uint32, vao uint32, texture uint32) {
+func draw(window *glfw.Window, program uint32, vao uint32, texture uint32, count uint) {
 	gl.Clear(gl.COLOR_BUFFER_BIT)
 
 	gl.BindTexture(gl.TEXTURE_2D, texture)
@@ -90,6 +89,9 @@ func draw(window *glfw.Window, program uint32, vao uint32, texture uint32) {
 	gl.UseProgram(program)
 
 	gl.BindVertexArray(vao)
+
+	dx := gl.GetUniformLocation(program, gl.Str("dx" + "\x00"))
+	gl.Uniform1f(dx, float32(count) / 100.0)
 
 	gl.DrawElements(gl.TRIANGLES, pointsPerTriangle*numTriangles, gl.UNSIGNED_INT, gl.Ptr(nil))
 
@@ -134,7 +136,7 @@ func initGlfw() *glfw.Window {
 		panic(err)
 	}
 
-	glfw.WindowHint(glfw.Resizable, glfw.False)
+	glfw.WindowHint(glfw.Resizable, glfw.True)
 	glfw.WindowHint(glfw.ContextVersionMajor, 4)
 	glfw.WindowHint(glfw.ContextVersionMinor, 1)
 	glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
