@@ -7,11 +7,12 @@ layout (location = 2) in vec2 aTexCoord;
 out vec3 ourColour;
 out vec2 TexCoord;
 
-uniform float dx;
+uniform float scale;
+uniform mat4 translation;
 
 void main()
 {
-    gl_Position = vec4(aPos.x + dx, aPos.y, aPos.z, 1.0);
+    gl_Position = translation * vec4(aPos.x, aPos.y, aPos.z, 1.0);
     ourColour = aColour;
     TexCoord = aTexCoord;
 }

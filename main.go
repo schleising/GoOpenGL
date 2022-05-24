@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
+	"github.com/go-gl/mathgl/mgl32"
 	"github.com/schleising/GoOpenGL/shaders"
 	"github.com/schleising/GoOpenGL/textures"
 )
@@ -45,8 +46,8 @@ var (
 		// Bottom Left Vertex
 		-0.5, -0.5, 0.0, // Postion
 		0.0, 0.0, 1.0, // Colour
-		0.0, 1.0,  // Texture Coord
-		
+		0.0, 1.0, // Texture Coord
+
 		// Top Left Vertex
 		-0.5, 0.5, 0.0, // Postion
 		1.0, 1.0, 1.0, // Colour
@@ -106,8 +107,13 @@ func draw(window *glfw.Window, program uint32, vao uint32, texture uint32, count
 
 	gl.BindVertexArray(vao)
 
-	dx := gl.GetUniformLocation(program, gl.Str("dx"+"\x00"))
-	gl.Uniform1f(dx, float32(count)/100.0)
+	transMat := mgl32.Translate3D(float32(count) / 100.0, float32(count) / 100.0, 0.0)
+	rotMat := mgl32.HomogRotate3DZ(mgl32.DegToRad(float32(count)))
+
+	transMat = transMat.Mul4(rotMat)
+
+	translation := gl.GetUniformLocation(program, gl.Str("translation"+"\x00"))
+	gl.UniformMatrix4fv(translation, 1, false, &transMat[0])
 
 	gl.DrawElements(gl.TRIANGLES, pointsPerTriangle*numTriangles, gl.UNSIGNED_INT, gl.Ptr(nil))
 
