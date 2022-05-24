@@ -12,7 +12,7 @@ uniform mat4 translation;
 
 void main()
 {
-    gl_Position = translation * vec4(aPos.x, aPos.y, aPos.z, 1.0);
+    gl_Position = translation * vec4(aPos, 1.0);
     ourColour = aColour;
     TexCoord = aTexCoord;
 }
