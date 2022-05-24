@@ -56,7 +56,7 @@ var (
 	// The indices into vertices to make a rectangle from two triangles
 	indices = []uint32{
 		0, 1, 2, // TR -> BR -> BL
-		0, 2, 3, // TR -> BR -> TL
+		0, 2, 3, // TR -> BL -> TL
 	}
 )
 
