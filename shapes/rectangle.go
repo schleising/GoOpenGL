@@ -29,7 +29,7 @@ func (r *Rectangle) Create(x, y, width, height int, screen screen.Screen) {
 	r.Height = height
 	r.screen = screen
 	r.createVertices()
-	r.Handle = makeVao(r.Vertices, r.Indices)
+	r.Handle = r.makeVao()
 }
 
 func (r *Rectangle) Pos() (int, int) {
@@ -143,8 +143,7 @@ func (r *Rectangle) createVertices() {
 	r.Indices = []uint32{0, 1, 2, 0, 3, 2}
 }
 
-func makeVao(vertices []Vertex, indices []uint32) uint32 {
-	gl.Init()
+func (r *Rectangle) makeVao() uint32 {
 	var vao uint32
 	gl.GenVertexArrays(1, &vao)
 	gl.BindVertexArray(vao)
@@ -152,12 +151,12 @@ func makeVao(vertices []Vertex, indices []uint32) uint32 {
 	var vbo uint32
 	gl.GenBuffers(1, &vbo)
 	gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
-	gl.BufferData(gl.ARRAY_BUFFER, NumVertices*VertexSize, gl.Ptr(vertices), gl.STATIC_DRAW)
+	gl.BufferData(gl.ARRAY_BUFFER, NumVertices*VertexSize, gl.Ptr(r.Vertices), gl.STATIC_DRAW)
 
 	var ebo uint32
 	gl.GenBuffers(1, &ebo)
 	gl.BindBuffer(gl.ELEMENT_ARRAY_BUFFER, ebo)
-	gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, len(indices)*sizeOfUint32, gl.Ptr(indices), gl.STATIC_DRAW)
+	gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, len(r.Indices)*sizeOfUint32, gl.Ptr(r.Indices), gl.STATIC_DRAW)
 
 	var offset uintptr = 0
 	gl.VertexAttribPointerWithOffset(0, PointLen, gl.FLOAT, false, VertexSize, offset)
