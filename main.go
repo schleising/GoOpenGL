@@ -8,7 +8,9 @@ import (
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/go-gl/mathgl/mgl32"
+	"github.com/schleising/GoOpenGL/screen"
 	"github.com/schleising/GoOpenGL/shaders"
+	"github.com/schleising/GoOpenGL/shapes"
 	"github.com/schleising/GoOpenGL/textures"
 )
 
@@ -30,37 +32,6 @@ const (
 	fragmentShaderFile = "shaders/fragmentShader.glsl"
 )
 
-var (
-	// The four vertices of a rectangle
-	vertices = []float32{
-		// Top Right Vertex
-		0.5, 0.5, 0.0, // Postion
-		1.0, 0.0, 0.0, // Colour
-		1.0, 0.0, // Texture Coord
-
-		// Bottom Right Vertex
-		0.5, -0.5, 0.0, // Postion
-		0.0, 1.0, 0.0, // Colour
-		1.0, 1.0, // Texture Coord
-
-		// Bottom Left Vertex
-		-0.5, -0.5, 0.0, // Postion
-		0.0, 0.0, 1.0, // Colour
-		0.0, 1.0, // Texture Coord
-
-		// Top Left Vertex
-		-0.5, 0.5, 0.0, // Postion
-		1.0, 1.0, 1.0, // Colour
-		0.0, 0.0, // Texture Coord
-	}
-
-	// The indices into vertices to make a rectangle from two triangles
-	indices = []uint32{
-		0, 1, 2, // TR -> BR -> BL
-		0, 2, 3, // TR -> BL -> TL
-	}
-)
-
 func main() {
 	runtime.LockOSThread()
 
@@ -69,7 +40,13 @@ func main() {
 
 	program := initOpenGL()
 
-	vao := makeVao(vertices, indices)
+	var screen screen.Screen
+	screen.SetScreenSize(width, height)
+
+	var rect shapes.Rectangle
+	rect.Create(200, 150, 400, 300, screen)
+
+	vao := rect.Handle
 
 	texture1, err := textures.LoadImage("images/IMG_0033.JPG")
 
@@ -107,7 +84,7 @@ func draw(window *glfw.Window, program uint32, vao uint32, texture uint32, count
 
 	gl.BindVertexArray(vao)
 
-	transMat := mgl32.Translate3D(float32(count) / 100.0, float32(count) / 100.0, 0.0)
+	transMat := mgl32.Translate3D(float32(count)/100.0, float32(count)/100.0, 0.0)
 	rotMat := mgl32.HomogRotate3DZ(mgl32.DegToRad(float32(count)))
 
 	transMat = transMat.Mul4(rotMat)
@@ -121,36 +98,6 @@ func draw(window *glfw.Window, program uint32, vao uint32, texture uint32, count
 
 	window.SwapBuffers()
 	glfw.PollEvents()
-}
-
-func makeVao(vertices []float32, indices []uint32) uint32 {
-	var vao uint32
-	gl.GenVertexArrays(1, &vao)
-	gl.BindVertexArray(vao)
-
-	var vbo uint32
-	gl.GenBuffers(1, &vbo)
-	gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
-	gl.BufferData(gl.ARRAY_BUFFER, len(vertices)*sizeOfFloat32, gl.Ptr(vertices), gl.STATIC_DRAW)
-
-	var ebo uint32
-	gl.GenBuffers(1, &ebo)
-	gl.BindBuffer(gl.ELEMENT_ARRAY_BUFFER, ebo)
-	gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, len(indices)*sizeOfUint32, gl.Ptr(indices), gl.STATIC_DRAW)
-
-	var offset uintptr = 0
-	gl.VertexAttribPointerWithOffset(0, positionSize, gl.FLOAT, false, vertexSize*sizeOfFloat32, offset)
-	gl.EnableVertexAttribArray(0)
-
-	offset = positionSize * sizeOfFloat32
-	gl.VertexAttribPointerWithOffset(1, colourSize, gl.FLOAT, false, vertexSize*sizeOfFloat32, offset)
-	gl.EnableVertexAttribArray(1)
-
-	offset = (positionSize + colourSize) * sizeOfFloat32
-	gl.VertexAttribPointerWithOffset(2, texCoordSize, gl.FLOAT, false, vertexSize*sizeOfFloat32, offset)
-	gl.EnableVertexAttribArray(2)
-
-	return vao
 }
 
 func initGlfw() *glfw.Window {
@@ -200,10 +147,6 @@ func initOpenGL() uint32 {
 	gl.UseProgram(prog)
 	gl.DeleteShader(vertexShader)
 	gl.DeleteShader(fragmentShader)
-
-	var nAttributes int32
-	gl.GetIntegerv(gl.MAX_VERTEX_ATTRIBS, &nAttributes)
-	fmt.Println(nAttributes)
 
 	// gl.PolygonMode(gl.FRONT_AND_BACK, gl.LINE)
 
