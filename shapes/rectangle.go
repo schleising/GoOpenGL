@@ -44,10 +44,10 @@ func (r *Rectangle) Size() (int, int) {
 
 func (r *Rectangle) createVertices() {
 	// Bottom Left
-	glBlx, glBly := mgl32.ScreenToGLCoords(r.XPos, r.YPos, r.screen.Width, r.screen.Height)
-	glTlx, glTly := mgl32.ScreenToGLCoords(r.XPos, r.YPos+r.Height, r.screen.Width, r.screen.Height)
-	glTrx, glTry := mgl32.ScreenToGLCoords(r.XPos+r.Width, r.YPos+r.Height, r.screen.Width, r.screen.Height)
-	glBrx, glBry := mgl32.ScreenToGLCoords(r.XPos+r.Width, r.YPos, r.screen.Width, r.screen.Height)
+	glBlx, glBly := mgl32.ScreenToGLCoords(-r.Width/2+r.screen.Width/2, -r.Height/2+r.screen.Height/2, r.screen.Width, r.screen.Height)
+	glTlx, glTly := mgl32.ScreenToGLCoords(-r.Width/2+r.screen.Width/2, r.Height/2+r.screen.Height/2, r.screen.Width, r.screen.Height)
+	glTrx, glTry := mgl32.ScreenToGLCoords(r.Width/2+r.screen.Width/2, r.Height/2+r.screen.Height/2, r.screen.Width, r.screen.Height)
+	glBrx, glBry := mgl32.ScreenToGLCoords(r.Width/2+r.screen.Width/2, -r.Height/2+r.screen.Height/2, r.screen.Width, r.screen.Height)
 
 	blp := Point{
 		X: glBlx,
@@ -186,13 +186,15 @@ func (r *Rectangle) Draw(count uint, program uint32) {
 
 	gl.BindVertexArray(r.Handle)
 
-	// transMat := mgl32.Translate3D(float32(count)/100.0, float32(count)/100.0, 0.0)
+	glX, glY := mgl32.ScreenToGLCoords(r.XPos, r.YPos, r.screen.Width, r.screen.Height)
+
+	transMat := mgl32.Translate3D(glX, glY, 0.0)
 	rotMat := mgl32.HomogRotate3DZ(mgl32.DegToRad(float32(count)))
 
-	// transMat = transMat.Mul4(rotMat)
+	transMat = transMat.Mul4(rotMat)
 
 	translation := gl.GetUniformLocation(program, gl.Str("translation"+"\x00"))
-	gl.UniformMatrix4fv(translation, 1, false, &rotMat[0])
+	gl.UniformMatrix4fv(translation, 1, false, &transMat[0])
 
 	gl.DrawElements(gl.TRIANGLES, PointLen*numTriangles, gl.UNSIGNED_INT, gl.Ptr(nil))
 

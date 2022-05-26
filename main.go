@@ -47,7 +47,7 @@ func main() {
 	screen.SetScreenSize(width, height)
 
 	var rect1 shapes.Rectangle
-	rect1.Create(600, 0, 200, 150, screen)
+	rect1.Create(600, 100, 200, 150, screen)
 
 	texture1, err := textures.LoadImage("images/IMG_0033.JPG")
 
@@ -60,7 +60,7 @@ func main() {
 	rectList = append(rectList, rect1)
 
 	var rect2 shapes.Rectangle
-	rect2.Create(0, 300, 400, 300, screen)
+	rect2.Create(300, 300, 400, 300, screen)
 
 	texture2, err := textures.LoadImage("images/pipeline.png")
 
