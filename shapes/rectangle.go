@@ -7,6 +7,7 @@ import (
 )
 
 const (
+	numTriangles = 2
 	NumVertices  = 4
 	sizeOfUint32 = 4
 )
@@ -20,6 +21,7 @@ type Rectangle struct {
 	Indices  []uint32
 	screen   screen.Screen
 	Handle   uint32
+	texture  uint32
 }
 
 func (r *Rectangle) Create(x, y, width, height int, screen screen.Screen) {
@@ -171,4 +173,28 @@ func (r *Rectangle) makeVao() uint32 {
 	gl.EnableVertexAttribArray(2)
 
 	return vao
+}
+
+func (r *Rectangle) SetTexture(texture uint32) {
+	r.texture = texture
+}
+
+func (r *Rectangle) Draw(count uint, program uint32) {
+	gl.BindTexture(gl.TEXTURE_2D, r.texture)
+
+	gl.UseProgram(program)
+
+	gl.BindVertexArray(r.Handle)
+
+	// transMat := mgl32.Translate3D(float32(count)/100.0, float32(count)/100.0, 0.0)
+	rotMat := mgl32.HomogRotate3DZ(mgl32.DegToRad(float32(count)))
+
+	// transMat = transMat.Mul4(rotMat)
+
+	translation := gl.GetUniformLocation(program, gl.Str("translation"+"\x00"))
+	gl.UniformMatrix4fv(translation, 1, false, &rotMat[0])
+
+	gl.DrawElements(gl.TRIANGLES, PointLen*numTriangles, gl.UNSIGNED_INT, gl.Ptr(nil))
+
+	gl.BindVertexArray(0)
 }

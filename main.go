@@ -7,7 +7,6 @@ import (
 
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
-	"github.com/go-gl/mathgl/mgl32"
 	"github.com/schleising/GoOpenGL/screen"
 	"github.com/schleising/GoOpenGL/shaders"
 	"github.com/schleising/GoOpenGL/shapes"
@@ -32,6 +31,10 @@ const (
 	fragmentShaderFile = "shaders/fragmentShader.glsl"
 )
 
+var (
+	rectList []shapes.Rectangle
+)
+
 func main() {
 	runtime.LockOSThread()
 
@@ -43,10 +46,8 @@ func main() {
 	var screen screen.Screen
 	screen.SetScreenSize(width, height)
 
-	var rect shapes.Rectangle
-	rect.Create(200, 150, 400, 300, screen)
-
-	vao := rect.Handle
+	var rect1 shapes.Rectangle
+	rect1.Create(600, 0, 200, 150, screen)
 
 	texture1, err := textures.LoadImage("images/IMG_0033.JPG")
 
@@ -54,47 +55,38 @@ func main() {
 		panic(0)
 	}
 
+	rect1.SetTexture(texture1)
+
+	rectList = append(rectList, rect1)
+
+	var rect2 shapes.Rectangle
+	rect2.Create(0, 300, 400, 300, screen)
+
 	texture2, err := textures.LoadImage("images/pipeline.png")
 
 	if err != nil {
 		panic(0)
 	}
 
-	texture := texture1
+	rect2.SetTexture(texture2)
+
+	rectList = append(rectList, rect2)
+
 	var count uint = 0
 
 	for !window.ShouldClose() {
-		if int(count/10)%2 == 0 {
-			texture = texture1
-		} else {
-			texture = texture2
-		}
-		draw(window, program, vao, texture, count)
+		draw(window, program, count)
 		time.Sleep(50 * time.Millisecond)
 		count++
 	}
 }
 
-func draw(window *glfw.Window, program uint32, vao uint32, texture uint32, count uint) {
+func draw(window *glfw.Window, program uint32, count uint) {
 	gl.Clear(gl.COLOR_BUFFER_BIT)
 
-	gl.BindTexture(gl.TEXTURE_2D, texture)
-
-	gl.UseProgram(program)
-
-	gl.BindVertexArray(vao)
-
-	transMat := mgl32.Translate3D(float32(count)/100.0, float32(count)/100.0, 0.0)
-	rotMat := mgl32.HomogRotate3DZ(mgl32.DegToRad(float32(count)))
-
-	transMat = transMat.Mul4(rotMat)
-
-	translation := gl.GetUniformLocation(program, gl.Str("translation"+"\x00"))
-	gl.UniformMatrix4fv(translation, 1, false, &transMat[0])
-
-	gl.DrawElements(gl.TRIANGLES, pointsPerTriangle*numTriangles, gl.UNSIGNED_INT, gl.Ptr(nil))
-
-	gl.BindVertexArray(0)
+	for _, rect := range(rectList){
+		rect.Draw(count, program)
+	}
 
 	window.SwapBuffers()
 	glfw.PollEvents()
