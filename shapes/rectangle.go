@@ -13,8 +13,8 @@ const (
 )
 
 type Rectangle struct {
-	XPos     int
-	YPos     int
+	XPos     float32
+	YPos     float32
 	Width    int
 	Height   int
 	Vertices []Vertex
@@ -22,9 +22,10 @@ type Rectangle struct {
 	screen   screen.Screen
 	Handle   uint32
 	texture  uint32
+	program  uint32
 }
 
-func (r *Rectangle) Create(x, y, width, height int, screen screen.Screen) {
+func (r *Rectangle) Create(x, y float32, width, height int, screen screen.Screen) {
 	r.XPos = x
 	r.YPos = y
 	r.Width = width
@@ -34,12 +35,16 @@ func (r *Rectangle) Create(x, y, width, height int, screen screen.Screen) {
 	r.Handle = r.makeVao()
 }
 
-func (r *Rectangle) Pos() (int, int) {
+func (r *Rectangle) Pos() (float32, float32) {
 	return r.XPos, r.YPos
 }
 
 func (r *Rectangle) Size() (int, int) {
 	return r.Width, r.Height
+}
+
+func (r *Rectangle) SetProgram(program uint32) {
+	r.program = program
 }
 
 func (r *Rectangle) createVertices() {
@@ -179,21 +184,21 @@ func (r *Rectangle) SetTexture(texture uint32) {
 	r.texture = texture
 }
 
-func (r *Rectangle) Draw(count uint, program uint32) {
+func (r *Rectangle) Draw() {
 	gl.BindTexture(gl.TEXTURE_2D, r.texture)
 
-	gl.UseProgram(program)
+	gl.UseProgram(r.program)
 
 	gl.BindVertexArray(r.Handle)
 
-	glX, glY := mgl32.ScreenToGLCoords(r.XPos, r.YPos, r.screen.Width, r.screen.Height)
+	glX, glY := mgl32.ScreenToGLCoords(int(r.XPos), int(r.YPos), r.screen.Width, r.screen.Height)
 
 	transMat := mgl32.Translate3D(glX, glY, 0.0)
-	rotMat := mgl32.HomogRotate3DZ(mgl32.DegToRad(float32(count)))
+	// rotMat := mgl32.HomogRotate3DZ(mgl32.DegToRad(float32(count)))
 
-	transMat = transMat.Mul4(rotMat)
+	// transMat = transMat.Mul4(rotMat)
 
-	translation := gl.GetUniformLocation(program, gl.Str("translation"+"\x00"))
+	translation := gl.GetUniformLocation(r.program, gl.Str("translation"+"\x00"))
 	gl.UniformMatrix4fv(translation, 1, false, &transMat[0])
 
 	gl.DrawElements(gl.TRIANGLES, PointLen*numTriangles, gl.UNSIGNED_INT, gl.Ptr(nil))

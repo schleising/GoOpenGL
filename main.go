@@ -31,7 +31,7 @@ const (
 )
 
 var (
-	rectList []shapes.Rectangle
+	rectList []*shapes.Rectangle
 )
 
 func main() {
@@ -55,8 +55,9 @@ func main() {
 	}
 
 	rect1.SetTexture(texture1)
+	rect1.SetProgram(program)
 
-	rectList = append(rectList, rect1)
+	rectList = append(rectList, &rect1)
 
 	var rect2 shapes.Rectangle
 	rect2.Create(300, 300, 400, 300, screen)
@@ -68,23 +69,24 @@ func main() {
 	}
 
 	rect2.SetTexture(texture2)
+	rect2.SetProgram(program)
 
-	rectList = append(rectList, rect2)
+	rectList = append(rectList, &rect2)
 
 	var count uint = 0
 
 	for !window.ShouldClose() {
-		draw(window, program, count)
-		time.Sleep(50 * time.Millisecond)
+		draw(window)
+		time.Sleep(16 * time.Millisecond)
 		count++
 	}
 }
 
-func draw(window *glfw.Window, program uint32, count uint) {
+func draw(window *glfw.Window) {
 	gl.Clear(gl.COLOR_BUFFER_BIT)
 
 	for _, rect := range rectList {
-		rect.Draw(count, program)
+		rect.Draw()
 	}
 
 	window.SwapBuffers()
@@ -111,6 +113,7 @@ func initGlfw() *glfw.Window {
 
 	glfw.SwapInterval(1)
 	window.SetKeyCallback(keyCallBack)
+	window.SetScrollCallback(scrollCallback)
 
 	return window
 }
@@ -149,5 +152,16 @@ func keyCallBack(window *glfw.Window, key glfw.Key, scancode int, action glfw.Ac
 		if key == glfw.KeyEscape {
 			window.SetShouldClose(true)
 		}
+		if key == glfw.KeyUp {
+			for _, rect := range rectList {
+				rect.YPos += 1
+			}
+		}
+	}
+}
+
+func scrollCallback(window *glfw.Window, xoffset, yoffset float64) {
+	for _, rect := range rectList {
+		rect.YPos = rect.YPos + float32(yoffset * 10)
 	}
 }
