@@ -13,24 +13,21 @@ import (
 )
 
 func LoadImage(filename string) (uint32, error) {
-	fmt.Println(filename)
 	loadedImage, err := os.Open(filename)
 
 	if err != nil {
-		fmt.Println("1")
+		fmt.Println("Error loading image")
 		return 0, err
 	}
 
 	defer loadedImage.Close()
 
-	img, other, err := image.Decode(loadedImage)
+	img, _, err := image.Decode(loadedImage)
 
 	if err != nil {
-		fmt.Println("2")
+		fmt.Println("Error decoding image")
 		return 0, err
 	}
-
-	fmt.Println(other)
 
 	texture := createTextureFromImage(img)
 

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"runtime"
 	"time"
 
@@ -84,7 +83,7 @@ func main() {
 func draw(window *glfw.Window, program uint32, count uint) {
 	gl.Clear(gl.COLOR_BUFFER_BIT)
 
-	for _, rect := range(rectList){
+	for _, rect := range rectList {
 		rect.Draw(count, program)
 	}
 
@@ -147,7 +146,6 @@ func initOpenGL() uint32 {
 
 func keyCallBack(window *glfw.Window, key glfw.Key, scancode int, action glfw.Action, modifier glfw.ModifierKey) {
 	if action == glfw.Press {
-		fmt.Println(key)
 		if key == glfw.KeyEscape {
 			window.SetShouldClose(true)
 		}
