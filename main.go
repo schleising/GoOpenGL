@@ -7,7 +7,6 @@ import (
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/go-gl/mathgl/mgl32"
-	"github.com/schleising/GoOpenGL/screen"
 	"github.com/schleising/GoOpenGL/shaders"
 	"github.com/schleising/GoOpenGL/shapes"
 	"github.com/schleising/GoOpenGL/textures"
@@ -43,9 +42,6 @@ func main() {
 	defer glfw.Terminate()
 
 	program = initOpenGL()
-
-	var screen screen.Screen
-	screen.SetScreenSize(width, height)
 
 	rect1 := shapes.NewRectangle(600, 100, 200, 150)
 
