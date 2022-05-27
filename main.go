@@ -72,8 +72,9 @@ func main() {
 
 	var count uint = 0
 
+	draw(window)
+
 	for !window.ShouldClose() {
-		draw(window)
 		time.Sleep(16 * time.Millisecond)
 		count++
 		glfw.PollEvents()
@@ -170,6 +171,7 @@ func scrollCallback(window *glfw.Window, xoffset, yoffset float64) {
 	for _, rect := range rectList {
 		rect.YPos = rect.YPos + float32(yoffset*10)
 	}
+	draw(window)
 }
 
 func sizeCallback(window *glfw.Window, width int, height int) {

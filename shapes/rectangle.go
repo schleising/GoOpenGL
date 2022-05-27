@@ -182,6 +182,10 @@ func (r *Rectangle) makeVao() uint32 {
 	gl.VertexAttribPointerWithOffset(2, TexCoordLen, gl.FLOAT, false, VertexSize, offset)
 	gl.EnableVertexAttribArray(2)
 
+	gl.BindVertexArray(0)
+	gl.BindBuffer(gl.ARRAY_BUFFER, 0)
+	gl.BindBuffer(gl.ELEMENT_ARRAY_BUFFER, 0)
+
 	return vao
 }
 
@@ -203,6 +207,7 @@ func (r *Rectangle) Draw() {
 	gl.DrawElements(gl.TRIANGLES, PointLen*numTriangles, gl.UNSIGNED_INT, gl.Ptr(nil))
 
 	gl.BindVertexArray(0)
+	gl.BindTexture(gl.TEXTURE_2D, 0)
 }
 
 func (r *Rectangle) ClickInRect(x, y float32) bool {
