@@ -3,7 +3,6 @@ package shapes
 import (
 	"github.com/go-gl/gl/v2.1/gl"
 	"github.com/go-gl/mathgl/mgl32"
-	"github.com/schleising/GoOpenGL/screen"
 )
 
 const (
@@ -17,22 +16,20 @@ type Rectangle struct {
 	YPos     float32
 	Width    int
 	Height   int
-	Vertices []Vertex
-	Indices  []uint32
-	screen   screen.Screen
-	Handle   uint32
+	vertices []Vertex
+	indices  []uint32
+	handle   uint32
 	texture  uint32
 	program  uint32
 }
 
-func (r *Rectangle) Create(x, y float32, width, height int, screen screen.Screen) {
+func (r *Rectangle) Create(x, y float32, width, height int) {
 	r.XPos = x
 	r.YPos = y
 	r.Width = width
 	r.Height = height
-	r.screen = screen
 	r.createVertices()
-	r.Handle = r.makeVao()
+	r.handle = r.makeVao()
 }
 
 func (r *Rectangle) Pos() (float32, float32) {
@@ -48,11 +45,17 @@ func (r *Rectangle) SetProgram(program uint32) {
 }
 
 func (r *Rectangle) createVertices() {
-	// Bottom Left
-	glBlx, glBly := mgl32.ScreenToGLCoords(-r.Width/2+r.screen.Width/2, -r.Height/2+r.screen.Height/2, r.screen.Width, r.screen.Height)
-	glTlx, glTly := mgl32.ScreenToGLCoords(-r.Width/2+r.screen.Width/2, r.Height/2+r.screen.Height/2, r.screen.Width, r.screen.Height)
-	glTrx, glTry := mgl32.ScreenToGLCoords(r.Width/2+r.screen.Width/2, r.Height/2+r.screen.Height/2, r.screen.Width, r.screen.Height)
-	glBrx, glBry := mgl32.ScreenToGLCoords(r.Width/2+r.screen.Width/2, -r.Height/2+r.screen.Height/2, r.screen.Width, r.screen.Height)
+	glBlx := float32(-r.Width) / 2.0
+	glBly := float32(-r.Height) / 2.0
+
+	glTlx := float32(-r.Width) / 2.0
+	glTly := float32(r.Height) / 2.0
+
+	glTrx := float32(r.Width) / 2.0
+	glTry := float32(r.Height) / 2.0
+
+	glBrx := float32(r.Width) / 2.0
+	glBry := float32(-r.Height) / 2.0
 
 	blp := Point{
 		X: glBlx,
@@ -146,8 +149,8 @@ func (r *Rectangle) createVertices() {
 		TexCoord: brt,
 	}
 
-	r.Vertices = []Vertex{blv, tlv, trv, brv}
-	r.Indices = []uint32{0, 1, 2, 0, 3, 2}
+	r.vertices = []Vertex{blv, tlv, trv, brv}
+	r.indices = []uint32{0, 1, 2, 0, 3, 2}
 }
 
 func (r *Rectangle) makeVao() uint32 {
@@ -158,12 +161,12 @@ func (r *Rectangle) makeVao() uint32 {
 	var vbo uint32
 	gl.GenBuffers(1, &vbo)
 	gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
-	gl.BufferData(gl.ARRAY_BUFFER, NumVertices*VertexSize, gl.Ptr(r.Vertices), gl.STATIC_DRAW)
+	gl.BufferData(gl.ARRAY_BUFFER, NumVertices*VertexSize, gl.Ptr(r.vertices), gl.STATIC_DRAW)
 
 	var ebo uint32
 	gl.GenBuffers(1, &ebo)
 	gl.BindBuffer(gl.ELEMENT_ARRAY_BUFFER, ebo)
-	gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, len(r.Indices)*sizeOfUint32, gl.Ptr(r.Indices), gl.STATIC_DRAW)
+	gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, len(r.indices)*sizeOfUint32, gl.Ptr(r.indices), gl.STATIC_DRAW)
 
 	var offset uintptr = 0
 	gl.VertexAttribPointerWithOffset(0, PointLen, gl.FLOAT, false, VertexSize, offset)
@@ -189,15 +192,9 @@ func (r *Rectangle) Draw() {
 
 	gl.UseProgram(r.program)
 
-	gl.BindVertexArray(r.Handle)
+	gl.BindVertexArray(r.handle)
 
-	glX, glY := mgl32.ScreenToGLCoords(int(r.XPos), int(r.YPos), r.screen.Width, r.screen.Height)
-
-	transMat := mgl32.Translate3D(glX, glY, 0.0)
-	// rotMat := mgl32.HomogRotate3DZ(mgl32.DegToRad(float32(count)))
-
-	// transMat = transMat.Mul4(rotMat)
-
+	transMat := mgl32.Translate3D(r.XPos, r.YPos, 0.0)
 	translation := gl.GetUniformLocation(r.program, gl.Str("translation"+"\x00"))
 	gl.UniformMatrix4fv(translation, 1, false, &transMat[0])
 

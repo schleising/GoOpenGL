@@ -6,6 +6,7 @@ import (
 
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
+	"github.com/go-gl/mathgl/mgl32"
 	"github.com/schleising/GoOpenGL/screen"
 	"github.com/schleising/GoOpenGL/shaders"
 	"github.com/schleising/GoOpenGL/shapes"
@@ -32,6 +33,7 @@ const (
 
 var (
 	rectList []*shapes.Rectangle
+	program  uint32
 )
 
 func main() {
@@ -40,13 +42,13 @@ func main() {
 	window := initGlfw()
 	defer glfw.Terminate()
 
-	program := initOpenGL()
+	program = initOpenGL()
 
 	var screen screen.Screen
 	screen.SetScreenSize(width, height)
 
 	var rect1 shapes.Rectangle
-	rect1.Create(600, 100, 200, 150, screen)
+	rect1.Create(600, 100, 200, 150)
 
 	texture1, err := textures.LoadImage("images/IMG_0033.JPG")
 
@@ -60,7 +62,7 @@ func main() {
 	rectList = append(rectList, &rect1)
 
 	var rect2 shapes.Rectangle
-	rect2.Create(300, 300, 400, 300, screen)
+	rect2.Create(300, 300, 400, 300)
 
 	texture2, err := textures.LoadImage("images/pipeline.png")
 
@@ -79,18 +81,25 @@ func main() {
 		draw(window)
 		time.Sleep(16 * time.Millisecond)
 		count++
+		glfw.PollEvents()
+
 	}
 }
 
 func draw(window *glfw.Window) {
 	gl.Clear(gl.COLOR_BUFFER_BIT)
 
+	width, height := window.GetSize()
+
+	projMat := mgl32.Ortho2D(0, float32(width), float32(height), 0)
+	projection := gl.GetUniformLocation(program, gl.Str("projection"+"\x00"))
+	gl.UniformMatrix4fv(projection, 1, false, &projMat[0])
+
 	for _, rect := range rectList {
 		rect.Draw()
 	}
 
 	window.SwapBuffers()
-	glfw.PollEvents()
 }
 
 func initGlfw() *glfw.Window {
@@ -114,6 +123,7 @@ func initGlfw() *glfw.Window {
 	glfw.SwapInterval(1)
 	window.SetKeyCallback(keyCallBack)
 	window.SetScrollCallback(scrollCallback)
+	window.SetSizeCallback(sizeCallback)
 
 	return window
 }
@@ -162,6 +172,10 @@ func keyCallBack(window *glfw.Window, key glfw.Key, scancode int, action glfw.Ac
 
 func scrollCallback(window *glfw.Window, xoffset, yoffset float64) {
 	for _, rect := range rectList {
-		rect.YPos = rect.YPos + float32(yoffset * 10)
+		rect.YPos = rect.YPos + float32(yoffset*10)
 	}
+}
+
+func sizeCallback(window *glfw.Window, width int, height int) {
+	draw(window)
 }
