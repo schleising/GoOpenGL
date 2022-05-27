@@ -47,8 +47,7 @@ func main() {
 	var screen screen.Screen
 	screen.SetScreenSize(width, height)
 
-	var rect1 shapes.Rectangle
-	rect1.Create(600, 100, 200, 150)
+	rect1 := shapes.NewRectangle(600, 100, 200, 150)
 
 	texture1, err := textures.LoadImage("images/IMG_0033.JPG")
 
@@ -59,10 +58,9 @@ func main() {
 	rect1.SetTexture(texture1)
 	rect1.SetProgram(program)
 
-	rectList = append(rectList, &rect1)
+	rectList = append(rectList, rect1)
 
-	var rect2 shapes.Rectangle
-	rect2.Create(300, 300, 400, 300)
+	rect2 := shapes.NewRectangle(300, 300, 400, 300)
 
 	texture2, err := textures.LoadImage("images/pipeline.png")
 
@@ -73,7 +71,7 @@ func main() {
 	rect2.SetTexture(texture2)
 	rect2.SetProgram(program)
 
-	rectList = append(rectList, &rect2)
+	rectList = append(rectList, rect2)
 
 	var count uint = 0
 

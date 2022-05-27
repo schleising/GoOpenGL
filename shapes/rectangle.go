@@ -23,13 +23,15 @@ type Rectangle struct {
 	program  uint32
 }
 
-func (r *Rectangle) Create(x, y float32, width, height int) {
+func NewRectangle(x, y float32, width, height int) *Rectangle {
+	r := new(Rectangle)
 	r.XPos = x
 	r.YPos = y
 	r.Width = width
 	r.Height = height
 	r.createVertices()
 	r.handle = r.makeVao()
+	return r
 }
 
 func (r *Rectangle) Pos() (float32, float32) {
