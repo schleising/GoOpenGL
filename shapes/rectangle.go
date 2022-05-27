@@ -47,17 +47,17 @@ func (r *Rectangle) SetProgram(program uint32) {
 }
 
 func (r *Rectangle) createVertices() {
-	glBlx := float32(-r.Width) / 2.0
-	glBly := float32(-r.Height) / 2.0
+	glBlx := float32(0.0)
+	glBly := float32(r.Height)
 
-	glTlx := float32(-r.Width) / 2.0
-	glTly := float32(r.Height) / 2.0
+	glTlx := float32(0.0)
+	glTly := float32(0.0)
 
-	glTrx := float32(r.Width) / 2.0
-	glTry := float32(r.Height) / 2.0
+	glTrx := float32(r.Width)
+	glTry := float32(0.0)
 
-	glBrx := float32(r.Width) / 2.0
-	glBry := float32(-r.Height) / 2.0
+	glBrx := float32(r.Width)
+	glBry := float32(r.Height)
 
 	blp := Point{
 		X: glBlx,
@@ -73,7 +73,7 @@ func (r *Rectangle) createVertices() {
 
 	blt := TexCoord{
 		S: 0.0,
-		T: 0.0,
+		T: 1.0,
 	}
 
 	blv := Vertex{
@@ -96,7 +96,7 @@ func (r *Rectangle) createVertices() {
 
 	tlt := TexCoord{
 		S: 0.0,
-		T: 1.0,
+		T: 0.0,
 	}
 
 	tlv := Vertex{
@@ -119,7 +119,7 @@ func (r *Rectangle) createVertices() {
 
 	trt := TexCoord{
 		S: 1.0,
-		T: 1.0,
+		T: 0.0,
 	}
 
 	trv := Vertex{
@@ -142,7 +142,7 @@ func (r *Rectangle) createVertices() {
 
 	brt := TexCoord{
 		S: 1.0,
-		T: 0.0,
+		T: 1.0,
 	}
 
 	brv := Vertex{
@@ -203,4 +203,12 @@ func (r *Rectangle) Draw() {
 	gl.DrawElements(gl.TRIANGLES, PointLen*numTriangles, gl.UNSIGNED_INT, gl.Ptr(nil))
 
 	gl.BindVertexArray(0)
+}
+
+func (r *Rectangle) ClickInRect(x, y float32) bool {
+	if x >= r.XPos && x <= r.XPos+float32(r.Width) && y >= r.YPos && y <= r.YPos+float32(r.Height) {
+		return true
+	} else {
+		return false
+	}
 }

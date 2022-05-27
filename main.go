@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"runtime"
 	"time"
 
@@ -43,7 +44,7 @@ func main() {
 
 	program = initOpenGL()
 
-	rect1 := shapes.NewRectangle(600, 100, 200, 150)
+	rect1 := shapes.NewRectangle(500, 100, 200, 150)
 
 	texture1, err := textures.LoadImage("images/IMG_0033.JPG")
 
@@ -56,7 +57,7 @@ func main() {
 
 	rectList = append(rectList, rect1)
 
-	rect2 := shapes.NewRectangle(300, 300, 400, 300)
+	rect2 := shapes.NewRectangle(50, 200, 400, 300)
 
 	texture2, err := textures.LoadImage("images/pipeline.png")
 
@@ -118,6 +119,7 @@ func initGlfw() *glfw.Window {
 	window.SetKeyCallback(keyCallBack)
 	window.SetScrollCallback(scrollCallback)
 	window.SetSizeCallback(sizeCallback)
+	window.SetMouseButtonCallback(mouseButtonCallback)
 
 	return window
 }
@@ -172,4 +174,16 @@ func scrollCallback(window *glfw.Window, xoffset, yoffset float64) {
 
 func sizeCallback(window *glfw.Window, width int, height int) {
 	draw(window)
+}
+
+func mouseButtonCallback(window *glfw.Window, button glfw.MouseButton, action glfw.Action, mods glfw.ModifierKey) {
+	x, y := window.GetCursorPos()
+
+	if action == glfw.Press && button == glfw.MouseButtonLeft {
+		for _, rect := range rectList {
+			if rect.ClickInRect(float32(x), float32(y)) {
+				fmt.Println("Click In Rect")
+			}
+		}
+	}
 }
