@@ -162,11 +162,6 @@ func keyCallBack(window *glfw.Window, key glfw.Key, scancode int, action glfw.Ac
 		if key == glfw.KeyEscape {
 			window.SetShouldClose(true)
 		}
-		if key == glfw.KeyUp {
-			for _, rect := range rectList {
-				rect.YPos += 1
-			}
-		}
 	}
 }
 
