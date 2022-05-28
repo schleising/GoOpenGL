@@ -9,7 +9,6 @@ import (
 	"github.com/go-gl/mathgl/mgl32"
 	"github.com/schleising/GoOpenGL/shaders"
 	"github.com/schleising/GoOpenGL/shapes"
-	"github.com/schleising/GoOpenGL/textures"
 )
 
 const (
@@ -46,30 +45,12 @@ func main() {
 
 	program = initOpenGL()
 
-	rect1 := shapes.NewRectangle(500, 100, 200, 150)
-
-	texture1, err := textures.LoadImage("images/IMG_0033.JPG")
-
-	if err != nil {
-		panic(0)
-	}
-
-	rect1.SetTexture(texture1)
-	rect1.SetProgram(program)
-
+	rect1 := shapes.NewRectangle(550, 400, 200, 150)
+	rect1.SetTexture("images/pipeline.png")
 	rectList = append(rectList, rect1)
-
-	rect2 := shapes.NewRectangle(50, 200, 400, 300)
-
-	texture2, err := textures.LoadImage("images/pipeline.png")
-
-	if err != nil {
-		panic(0)
-	}
-
-	rect2.SetTexture(texture2)
-	rect2.SetProgram(program)
-
+	
+	rect2 := shapes.NewRectangle(100, 100, 400, 300)
+	rect2.SetTexture("images/IMG_0033.JPG")
 	rectList = append(rectList, rect2)
 
 	var count uint = 0
@@ -94,7 +75,7 @@ func draw(window *glfw.Window) {
 	gl.UniformMatrix4fv(projection, 1, false, &projMat[0])
 
 	for _, rect := range rectList {
-		rect.Draw()
+		rect.Draw(program)
 	}
 
 	window.SwapBuffers()

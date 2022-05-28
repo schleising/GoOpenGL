@@ -3,12 +3,14 @@ package shapes
 import (
 	"github.com/go-gl/gl/v2.1/gl"
 	"github.com/go-gl/mathgl/mgl32"
+	"github.com/schleising/GoOpenGL/textures"
 )
 
 const (
 	numTriangles = 2
 	NumVertices  = 4
 	sizeOfUint32 = 4
+	defaultTextureLocation = "images/1x1_#000000ff.png"
 )
 
 type Rectangle struct {
@@ -20,7 +22,6 @@ type Rectangle struct {
 	indices  []uint32
 	handle   uint32
 	texture  uint32
-	program  uint32
 }
 
 func NewRectangle(x, y float32, width, height int) *Rectangle {
@@ -31,6 +32,7 @@ func NewRectangle(x, y float32, width, height int) *Rectangle {
 	r.Height = height
 	r.createVertices()
 	r.handle = r.makeVao()
+	r.SetTexture(defaultTextureLocation)
 	return r
 }
 
@@ -40,10 +42,6 @@ func (r *Rectangle) Pos() (float32, float32) {
 
 func (r *Rectangle) Size() (int, int) {
 	return r.Width, r.Height
-}
-
-func (r *Rectangle) SetProgram(program uint32) {
-	r.program = program
 }
 
 func (r *Rectangle) createVertices() {
@@ -189,19 +187,23 @@ func (r *Rectangle) makeVao() uint32 {
 	return vao
 }
 
-func (r *Rectangle) SetTexture(texture uint32) {
-	r.texture = texture
+func (r *Rectangle) SetTexture(filename string) {
+	texture, err := textures.LoadImage(filename)
+
+	if err == nil {
+		r.texture = texture
+	}
 }
 
-func (r *Rectangle) Draw() {
+func (r *Rectangle) Draw(program uint32) {
 	gl.BindTexture(gl.TEXTURE_2D, r.texture)
 
-	gl.UseProgram(r.program)
+	gl.UseProgram(program)
 
 	gl.BindVertexArray(r.handle)
 
 	transMat := mgl32.Translate3D(r.XPos, r.YPos, 0.0)
-	translation := gl.GetUniformLocation(r.program, gl.Str("translation"+"\x00"))
+	translation := gl.GetUniformLocation(program, gl.Str("translation"+"\x00"))
 	gl.UniformMatrix4fv(translation, 1, false, &transMat[0])
 
 	gl.DrawElements(gl.TRIANGLES, PointLen*numTriangles, gl.UNSIGNED_INT, gl.Ptr(nil))

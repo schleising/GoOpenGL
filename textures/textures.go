@@ -16,7 +16,7 @@ func LoadImage(filename string) (uint32, error) {
 	loadedImage, err := os.Open(filename)
 
 	if err != nil {
-		fmt.Println("Error loading image")
+		fmt.Printf("Error loading image: %v\n", filename)
 		return 0, err
 	}
 
@@ -25,7 +25,7 @@ func LoadImage(filename string) (uint32, error) {
 	img, _, err := image.Decode(loadedImage)
 
 	if err != nil {
-		fmt.Println("Error decoding image")
+		fmt.Printf("Error decoding image: %v\n", filename)
 		return 0, err
 	}
 
