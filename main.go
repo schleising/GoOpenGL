@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"runtime"
 	"time"
 
@@ -32,8 +31,11 @@ const (
 )
 
 var (
-	rectList []*shapes.Rectangle
-	program  uint32
+	rectList   []*shapes.Rectangle
+	program    uint32
+	xLastDrag  float64
+	yLastDrag  float64
+	activeRect *shapes.Rectangle
 )
 
 func main() {
@@ -121,6 +123,7 @@ func initGlfw() *glfw.Window {
 	window.SetScrollCallback(scrollCallback)
 	window.SetSizeCallback(sizeCallback)
 	window.SetMouseButtonCallback(mouseButtonCallback)
+	window.SetCursorPosCallback(cursorPosCallback)
 
 	return window
 }
@@ -184,8 +187,26 @@ func mouseButtonCallback(window *glfw.Window, button glfw.MouseButton, action gl
 	if action == glfw.Press && button == glfw.MouseButtonLeft {
 		for _, rect := range rectList {
 			if rect.ClickInRect(float32(x), float32(y)) {
-				fmt.Println("Click In Rect")
+				activeRect = rect
+				xLastDrag = x
+				yLastDrag = y
 			}
 		}
+	} else if action == glfw.Release {
+		activeRect = nil
+		xLastDrag = 0
+		yLastDrag = 0
+	}
+}
+
+func cursorPosCallback(window *glfw.Window, xpos float64, ypos float64) {
+	if activeRect != nil {
+		dx := xpos - xLastDrag
+		dy := ypos - yLastDrag
+		xLastDrag = xpos
+		yLastDrag = ypos
+		activeRect.XPos += float32(dx)
+		activeRect.YPos += float32(dy)
+		draw(window)
 	}
 }
