@@ -7,9 +7,9 @@ import (
 )
 
 const (
-	numTriangles = 2
-	NumVertices  = 4
-	sizeOfUint32 = 4
+	numTriangles           = 2
+	NumVertices            = 4
+	sizeOfUint32           = 4
 	defaultTextureLocation = "images/1x1_#000000ff.png"
 )
 
@@ -57,97 +57,25 @@ func (r *Rectangle) createVertices() {
 	glBrx := float32(r.Width)
 	glBry := float32(r.Height)
 
-	blp := Point{
-		X: glBlx,
-		Y: glBly,
-		Z: 0,
-	}
+	blp := Point{X: glBlx, Y: glBly, Z: 0}
+	blc := Colour{R: 1.0, G: 0.0, B: 0.0}
+	blt := TexCoord{S: 0.0, T: 1.0}
+	blv := Vertex{Point: blp, Colour: blc, TexCoord: blt}
 
-	blc := Colour{
-		R: 1.0,
-		G: 0.0,
-		B: 0.0,
-	}
+	tlp := Point{X: glTlx, Y: glTly, Z: 0}
+	tlc := Colour{R: 0.0, G: 1.0, B: 0.0}
+	tlt := TexCoord{S: 0.0, T: 0.0}
+	tlv := Vertex{Point: tlp, Colour: tlc, TexCoord: tlt}
 
-	blt := TexCoord{
-		S: 0.0,
-		T: 1.0,
-	}
+	trp := Point{X: glTrx, Y: glTry, Z: 0}
+	trc := Colour{R: 0.0, G: 0.0, B: 1.0}
+	trt := TexCoord{S: 1.0, T: 0.0}
+	trv := Vertex{Point: trp, Colour: trc, TexCoord: trt}
 
-	blv := Vertex{
-		Point:    blp,
-		Colour:   blc,
-		TexCoord: blt,
-	}
-
-	tlp := Point{
-		X: glTlx,
-		Y: glTly,
-		Z: 0,
-	}
-
-	tlc := Colour{
-		R: 0.0,
-		G: 1.0,
-		B: 0.0,
-	}
-
-	tlt := TexCoord{
-		S: 0.0,
-		T: 0.0,
-	}
-
-	tlv := Vertex{
-		Point:    tlp,
-		Colour:   tlc,
-		TexCoord: tlt,
-	}
-
-	trp := Point{
-		X: glTrx,
-		Y: glTry,
-		Z: 0,
-	}
-
-	trc := Colour{
-		R: 0.0,
-		G: 0.0,
-		B: 1.0,
-	}
-
-	trt := TexCoord{
-		S: 1.0,
-		T: 0.0,
-	}
-
-	trv := Vertex{
-		Point:    trp,
-		Colour:   trc,
-		TexCoord: trt,
-	}
-
-	brp := Point{
-		X: glBrx,
-		Y: glBry,
-		Z: 0,
-	}
-
-	brc := Colour{
-		R: 1.0,
-		G: 1.0,
-		B: 1.0,
-	}
-
-	brt := TexCoord{
-		S: 1.0,
-		T: 1.0,
-	}
-
-	brv := Vertex{
-		Point:    brp,
-		Colour:   brc,
-		TexCoord: brt,
-	}
+	brp := Point{X: glBrx, Y: glBry, Z: 0}
+	brc := Colour{R: 1.0, G: 1.0, B: 1.0}
+	brt := TexCoord{S: 1.0, T: 1.0}
+	brv := Vertex{Point: brp, Colour: brc, TexCoord: brt}
 
 	r.vertices = []Vertex{blv, tlv, trv, brv}
 	r.indices = []uint32{0, 1, 2, 0, 3, 2}
