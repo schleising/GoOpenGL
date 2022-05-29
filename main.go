@@ -26,17 +26,19 @@ const (
 )
 
 var (
-	rectList     []*shapes.Rectangle
-	program      uint32
-	xLastDrag    float64
-	yLastDrag    float64
-	activeRect   *shapes.Rectangle
+	rectMap    map[string]*shapes.Rectangle
+	program    uint32
+	xLastDrag  float64
+	yLastDrag  float64
+	activeRect *shapes.Rectangle
 )
 
 func main() {
 	runtime.LockOSThread()
 
 	homeFolder, err := os.UserHomeDir()
+
+	rectMap = make(map[string]*shapes.Rectangle)
 
 	if err != nil {
 		panic(err)
@@ -74,13 +76,13 @@ func generateThumbnails(path string, windowWidth int) {
 
 	thumbnailSize := float64(windowWidth) / float64(thumbnailsPerRow)
 
-	for count, _ := range matches {
+	for count, file := range matches {
 		xPos := thumbnailSize * float64(count%thumbnailsPerRow)
 		yPos := thumbnailSize * float64(count/thumbnailsPerRow)
 
 		rect := shapes.NewRectangle(float32(xPos), float32(yPos), int(thumbnailSize), int(thumbnailSize))
 		// rect.SetTexture(file)
-		rectList = append(rectList, rect)
+		rectMap[file] = rect
 	}
 }
 
@@ -93,7 +95,7 @@ func draw(window *glfw.Window) {
 	projection := gl.GetUniformLocation(program, gl.Str("projection"+"\x00"))
 	gl.UniformMatrix4fv(projection, 1, false, &projMat[0])
 
-	for _, rect := range rectList {
+	for _, rect := range rectMap {
 		rect.Draw(program)
 	}
 
@@ -166,7 +168,7 @@ func keyCallBack(window *glfw.Window, key glfw.Key, scancode int, action glfw.Ac
 }
 
 func scrollCallback(window *glfw.Window, xoffset, yoffset float64) {
-	for _, rect := range rectList {
+	for _, rect := range rectMap {
 		rect.UpdateYPos(float32(yoffset * 10))
 	}
 	draw(window)
@@ -177,7 +179,7 @@ func sizeCallback(window *glfw.Window, width int, height int) {
 	// yScale := float64(height) / startHeight
 	scale := xScale
 
-	for _, rect := range rectList {
+	for _, rect := range rectMap {
 		rect.Scale(float32(scale))
 	}
 
@@ -188,7 +190,7 @@ func mouseButtonCallback(window *glfw.Window, button glfw.MouseButton, action gl
 	x, y := window.GetCursorPos()
 
 	if action == glfw.Press && button == glfw.MouseButtonLeft {
-		for _, rect := range rectList {
+		for _, rect := range rectMap {
 			if rect.ClickInRect(float32(x), float32(y)) {
 				activeRect = rect
 				xLastDrag = x
