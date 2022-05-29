@@ -3,7 +3,6 @@ package shapes
 import (
 	"github.com/go-gl/gl/v2.1/gl"
 	"github.com/go-gl/mathgl/mgl32"
-	"github.com/schleising/GoOpenGL/textures"
 )
 
 const (
@@ -31,8 +30,8 @@ func NewRectangle(x, y float32, width, height int) *Rectangle {
 	r.Width = width
 	r.Height = height
 	r.createVertices()
-	r.handle = r.makeVao()
 	r.SetTexture(defaultTextureLocation)
+	r.handle = r.makeVao()
 	return r
 }
 
@@ -58,24 +57,16 @@ func (r *Rectangle) createVertices() {
 	glBry := float32(r.Height)
 
 	blp := Point{X: glBlx, Y: glBly, Z: 0}
-	blc := Colour{R: 1.0, G: 0.0, B: 0.0}
-	blt := TexCoord{S: 0.0, T: 1.0}
-	blv := Vertex{Point: blp, Colour: blc, TexCoord: blt}
+	blv := Vertex{Point: blp}
 
 	tlp := Point{X: glTlx, Y: glTly, Z: 0}
-	tlc := Colour{R: 0.0, G: 1.0, B: 0.0}
-	tlt := TexCoord{S: 0.0, T: 0.0}
-	tlv := Vertex{Point: tlp, Colour: tlc, TexCoord: tlt}
+	tlv := Vertex{Point: tlp}
 
 	trp := Point{X: glTrx, Y: glTry, Z: 0}
-	trc := Colour{R: 0.0, G: 0.0, B: 1.0}
-	trt := TexCoord{S: 1.0, T: 0.0}
-	trv := Vertex{Point: trp, Colour: trc, TexCoord: trt}
+	trv := Vertex{Point: trp}
 
 	brp := Point{X: glBrx, Y: glBry, Z: 0}
-	brc := Colour{R: 1.0, G: 1.0, B: 1.0}
-	brt := TexCoord{S: 1.0, T: 1.0}
-	brv := Vertex{Point: brp, Colour: brc, TexCoord: brt}
+	brv := Vertex{Point: brp}
 
 	r.vertices = []Vertex{blv, tlv, trv, brv}
 	r.indices = []uint32{0, 1, 2, 0, 3, 2}
@@ -116,10 +107,21 @@ func (r *Rectangle) makeVao() uint32 {
 }
 
 func (r *Rectangle) SetTexture(filename string) {
-	texture, err := textures.LoadImage(filename)
+	texture, err := NewTexture(filename, r.Width, r.Height)
 
 	if err == nil {
-		r.texture = texture
+		r.texture = texture.Handle
+
+		r.vertices[0].TexCoord.S = texture.TexCoords[0].S
+		r.vertices[0].TexCoord.T = texture.TexCoords[0].T
+		r.vertices[1].TexCoord.S = texture.TexCoords[1].S
+		r.vertices[1].TexCoord.T = texture.TexCoords[1].T
+		r.vertices[2].TexCoord.S = texture.TexCoords[2].S
+		r.vertices[2].TexCoord.T = texture.TexCoords[2].T
+		r.vertices[3].TexCoord.S = texture.TexCoords[3].S
+		r.vertices[3].TexCoord.T = texture.TexCoords[3].T
+
+		r.handle = r.makeVao()
 	}
 }
 
