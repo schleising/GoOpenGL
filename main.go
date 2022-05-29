@@ -1,6 +1,7 @@
 package main
 
 import (
+	"math"
 	"runtime"
 	"time"
 
@@ -12,8 +13,8 @@ import (
 )
 
 const (
-	width  = 800
-	height = 600
+	startWidth  = 800
+	startHeight = 600
 
 	positionSize      = 3
 	colourSize        = 3
@@ -48,7 +49,7 @@ func main() {
 	rect1 := shapes.NewRectangle(550, 400, 200, 150)
 	rect1.SetTexture("images/pipeline.png")
 	rectList = append(rectList, rect1)
-	
+
 	rect2 := shapes.NewRectangle(100, 100, 400, 300)
 	rect2.SetTexture("images/IMG_0033.JPG")
 	rectList = append(rectList, rect2)
@@ -92,7 +93,7 @@ func initGlfw() *glfw.Window {
 	glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
 	glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
 
-	window, err := glfw.CreateWindow(width, height, "Hello", nil, nil)
+	window, err := glfw.CreateWindow(startWidth, startHeight, "Hello", nil, nil)
 	if err != nil {
 		panic(err)
 	}
@@ -148,12 +149,20 @@ func keyCallBack(window *glfw.Window, key glfw.Key, scancode int, action glfw.Ac
 
 func scrollCallback(window *glfw.Window, xoffset, yoffset float64) {
 	for _, rect := range rectList {
-		rect.YPos = rect.YPos + float32(yoffset*10)
+		rect.UpdateYPos(float32(yoffset * 10))
 	}
 	draw(window)
 }
 
 func sizeCallback(window *glfw.Window, width int, height int) {
+	xScale := float64(width) / startWidth
+	yScale := float64(height) / startHeight
+	scale := math.Min(xScale, yScale)
+
+	for _, rect := range rectList {
+		rect.Scale(float32(scale))
+	}
+
 	draw(window)
 }
 
@@ -181,8 +190,8 @@ func cursorPosCallback(window *glfw.Window, xpos float64, ypos float64) {
 		dy := ypos - yLastDrag
 		xLastDrag = xpos
 		yLastDrag = ypos
-		activeRect.XPos += float32(dx)
-		activeRect.YPos += float32(dy)
+		activeRect.UpdateXPos(float32(dx))
+		activeRect.UpdateYPos(float32(dy))
 		draw(window)
 	}
 }

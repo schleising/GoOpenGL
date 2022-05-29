@@ -13,48 +13,67 @@ const (
 )
 
 type Rectangle struct {
-	XPos     float32
-	YPos     float32
-	Width    int
-	Height   int
+	xPos     float32
+	yPos     float32
+	width    int
+	height   int
 	vertices []Vertex
 	indices  []uint32
 	handle   uint32
 	texture  uint32
+	scaleX   float32
+	scaleY   float32
+	angle    float32
 }
 
 func NewRectangle(x, y float32, width, height int) *Rectangle {
 	r := new(Rectangle)
-	r.XPos = x
-	r.YPos = y
-	r.Width = width
-	r.Height = height
+	r.xPos = x
+	r.yPos = y
+	r.width = width
+	r.height = height
+	r.scaleX = 1
+	r.scaleY = 1
+	r.angle = 0
 	r.createVertices()
 	r.SetTexture(defaultTextureLocation)
 	r.handle = r.makeVao()
 	return r
 }
 
+func (r *Rectangle) UpdateXPos(dx float32) {
+	r.xPos += dx / r.scaleX
+}
+
+func (r *Rectangle) UpdateYPos(dy float32) {
+	r.yPos += dy / r.scaleY
+}
+
 func (r *Rectangle) Pos() (float32, float32) {
-	return r.XPos, r.YPos
+	return r.xPos, r.yPos
 }
 
 func (r *Rectangle) Size() (int, int) {
-	return r.Width, r.Height
+	return r.width, r.height
+}
+
+func (r *Rectangle) Scale(scale float32) {
+	r.scaleX = scale
+	r.scaleY = scale
 }
 
 func (r *Rectangle) createVertices() {
 	glBlx := float32(0.0)
-	glBly := float32(r.Height)
+	glBly := float32(r.height)
 
 	glTlx := float32(0.0)
 	glTly := float32(0.0)
 
-	glTrx := float32(r.Width)
+	glTrx := float32(r.width)
 	glTry := float32(0.0)
 
-	glBrx := float32(r.Width)
-	glBry := float32(r.Height)
+	glBrx := float32(r.width)
+	glBry := float32(r.height)
 
 	blp := Point{X: glBlx, Y: glBly, Z: 0}
 	blv := Vertex{Point: blp}
@@ -107,7 +126,7 @@ func (r *Rectangle) makeVao() uint32 {
 }
 
 func (r *Rectangle) SetTexture(filename string) {
-	texture, err := NewTexture(filename, r.Width, r.Height)
+	texture, err := NewTexture(filename, r.width, r.height)
 
 	if err == nil {
 		r.texture = texture.Handle
@@ -132,7 +151,15 @@ func (r *Rectangle) Draw(program uint32) {
 
 	gl.BindVertexArray(r.handle)
 
-	transMat := mgl32.Translate3D(r.XPos, r.YPos, 0.0)
+	scaleMat := mgl32.Scale3D(r.scaleX, r.scaleY, 0.0)
+	scale := gl.GetUniformLocation(program, gl.Str("scale"+"\x00"))
+	gl.UniformMatrix4fv(scale, 1, false, &scaleMat[0])
+
+	rotMat := mgl32.HomogRotate3DZ(r.angle)
+	rotation := gl.GetUniformLocation(program, gl.Str("rotation"+"\x00"))
+	gl.UniformMatrix4fv(rotation, 1, false, &rotMat[0])
+
+	transMat := mgl32.Translate3D(r.xPos*r.scaleX, r.yPos*r.scaleY, 0.0)
 	translation := gl.GetUniformLocation(program, gl.Str("translation"+"\x00"))
 	gl.UniformMatrix4fv(translation, 1, false, &transMat[0])
 
@@ -143,7 +170,7 @@ func (r *Rectangle) Draw(program uint32) {
 }
 
 func (r *Rectangle) ClickInRect(x, y float32) bool {
-	if x >= r.XPos && x <= r.XPos+float32(r.Width) && y >= r.YPos && y <= r.YPos+float32(r.Height) {
+	if x >= r.xPos*r.scaleX && x <= ((r.xPos+float32(r.width))*r.scaleX) && y >= r.yPos*r.scaleY && y <= ((r.yPos+float32(r.height))*r.scaleY) {
 		return true
 	} else {
 		return false
