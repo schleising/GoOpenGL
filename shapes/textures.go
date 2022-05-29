@@ -19,7 +19,7 @@ type Texture struct {
 	TexCoords []TexCoord
 }
 
-func NewTexture(filename string, containerWidth, containerHeight int) (*Texture, error) {
+func NewTexture(filename string) (*Texture, error) {
 	loadedImage, err := os.Open(filename)
 
 	if err != nil {
@@ -36,17 +36,15 @@ func NewTexture(filename string, containerWidth, containerHeight int) (*Texture,
 		return nil, err
 	}
 
-	texture := createTextureFromImage(img)
+	rgba := image.NewRGBA(img.Bounds())
+	draw.Draw(rgba, rgba.Bounds(), img, image.Pt(0, 0), draw.Src)
 
-	texture.setTexCoords(containerWidth, containerHeight)
+	texture := CreateTextureFromImageRgba(rgba)
 
 	return texture, nil
 }
 
-func createTextureFromImage(img image.Image) *Texture {
-	rgba := image.NewRGBA(img.Bounds())
-	draw.Draw(rgba, rgba.Bounds(), img, image.Pt(0, 0), draw.Src)
-
+func CreateTextureFromImageRgba(rgba *image.RGBA) *Texture {
 	var texture Texture
 	gl.GenTextures(1, &texture.Handle)
 	gl.BindTexture(gl.TEXTURE_2D, texture.Handle)
@@ -70,7 +68,7 @@ func createTextureFromImage(img image.Image) *Texture {
 	return &texture
 }
 
-func (t *Texture) setTexCoords(containerWidth, containerHeight int) {
+func (t *Texture) SetTexCoords(containerWidth, containerHeight int) {
 	xScale := float32(containerWidth) / float32(t.Width)
 	yScale := float32(containerHeight) / float32(t.Height)
 

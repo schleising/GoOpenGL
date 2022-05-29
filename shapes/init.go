@@ -4,6 +4,6 @@ import (
 	"github.com/go-gl/gl/v2.1/gl"
 )
 
-func init(){
+func init() {
 	gl.Init()
 }

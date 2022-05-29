@@ -1,6 +1,8 @@
 package shapes
 
 import (
+	"fmt"
+
 	"github.com/go-gl/gl/v2.1/gl"
 	"github.com/go-gl/mathgl/mgl32"
 )
@@ -9,7 +11,11 @@ const (
 	numTriangles           = 2
 	NumVertices            = 4
 	sizeOfUint32           = 4
-	defaultTextureLocation = "images/1x1_#000000ff.png"
+	defaultTextureLocation = "images/Loading Icon.png"
+)
+
+var (
+	DefaultTexture *Texture
 )
 
 type Rectangle struct {
@@ -36,7 +42,7 @@ func NewRectangle(x, y float32, width, height int) *Rectangle {
 	r.scaleY = 1
 	r.angle = 0
 	r.createVertices()
-	r.SetTexture(defaultTextureLocation)
+	r.SetDefaultTexture()
 	r.handle = r.makeVao()
 	return r
 }
@@ -125,23 +131,34 @@ func (r *Rectangle) makeVao() uint32 {
 	return vao
 }
 
-func (r *Rectangle) SetTexture(filename string) {
-	texture, err := NewTexture(filename, r.width, r.height)
+func (r *Rectangle) SetDefaultTexture() {
 
-	if err == nil {
-		r.texture = texture.Handle
+	if DefaultTexture == nil {
+		fmt.Println("Creating Default Texture")
+		var err error
+		DefaultTexture, err = NewTexture(defaultTextureLocation)
 
-		r.vertices[0].TexCoord.S = texture.TexCoords[0].S
-		r.vertices[0].TexCoord.T = texture.TexCoords[0].T
-		r.vertices[1].TexCoord.S = texture.TexCoords[1].S
-		r.vertices[1].TexCoord.T = texture.TexCoords[1].T
-		r.vertices[2].TexCoord.S = texture.TexCoords[2].S
-		r.vertices[2].TexCoord.T = texture.TexCoords[2].T
-		r.vertices[3].TexCoord.S = texture.TexCoords[3].S
-		r.vertices[3].TexCoord.T = texture.TexCoords[3].T
+		if err != nil {
+			panic(err)
+		}
 
-		r.handle = r.makeVao()
+		DefaultTexture.SetTexCoords(r.width, r.height)
 	}
+
+	r.SetTexCoords(DefaultTexture)
+}
+
+func (r *Rectangle) SetTexCoords(texture *Texture) {
+	r.texture = texture.Handle
+
+	r.vertices[0].TexCoord.S = texture.TexCoords[0].S
+	r.vertices[0].TexCoord.T = texture.TexCoords[0].T
+	r.vertices[1].TexCoord.S = texture.TexCoords[1].S
+	r.vertices[1].TexCoord.T = texture.TexCoords[1].T
+	r.vertices[2].TexCoord.S = texture.TexCoords[2].S
+	r.vertices[2].TexCoord.T = texture.TexCoords[2].T
+	r.vertices[3].TexCoord.S = texture.TexCoords[3].S
+	r.vertices[3].TexCoord.T = texture.TexCoords[3].T
 }
 
 func (r *Rectangle) Draw(program uint32) {

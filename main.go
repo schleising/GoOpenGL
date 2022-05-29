@@ -1,7 +1,8 @@
 package main
 
 import (
-	"math"
+	"os"
+	"path/filepath"
 	"runtime"
 	"time"
 
@@ -16,43 +17,41 @@ const (
 	startWidth  = 800
 	startHeight = 600
 
-	positionSize      = 3
-	colourSize        = 3
-	texCoordSize      = 2
-	vertexSize        = positionSize + colourSize + texCoordSize
-	sizeOfFloat32     = 4
-	sizeOfUint32      = 4
-	numAttributes     = 3
-	pointsPerTriangle = 3
-	numTriangles      = 2
+	thumbnailsPerRow = 8
 
 	vertexShaderFile   = "shaders/vertexShader.glsl"
 	fragmentShaderFile = "shaders/fragmentShader.glsl"
+
+	baseFolder = "Pictures/Test Images"
 )
 
 var (
-	rectList   []*shapes.Rectangle
-	program    uint32
-	xLastDrag  float64
-	yLastDrag  float64
-	activeRect *shapes.Rectangle
+	rectList     []*shapes.Rectangle
+	program      uint32
+	xLastDrag    float64
+	yLastDrag    float64
+	activeRect   *shapes.Rectangle
 )
 
 func main() {
 	runtime.LockOSThread()
 
+	homeFolder, err := os.UserHomeDir()
+
+	if err != nil {
+		panic(err)
+	}
+
+	currentFolder := filepath.Join(homeFolder, baseFolder)
+
 	window := initGlfw()
 	defer glfw.Terminate()
 
+	width, _ := window.GetSize()
+
 	program = initOpenGL()
 
-	rect1 := shapes.NewRectangle(550, 400, 200, 150)
-	rect1.SetTexture("images/pipeline.png")
-	rectList = append(rectList, rect1)
-
-	rect2 := shapes.NewRectangle(100, 100, 400, 300)
-	rect2.SetTexture("images/IMG_0033.JPG")
-	rectList = append(rectList, rect2)
+	generateThumbnails(currentFolder, width)
 
 	var count uint = 0
 
@@ -63,6 +62,25 @@ func main() {
 		count++
 		glfw.PollEvents()
 
+	}
+}
+
+func generateThumbnails(path string, windowWidth int) {
+	matches, err := filepath.Glob(filepath.Join(path, "*.jpg"))
+
+	if err != nil {
+		panic(err)
+	}
+
+	thumbnailSize := float64(windowWidth) / float64(thumbnailsPerRow)
+
+	for count, _ := range matches {
+		xPos := thumbnailSize * float64(count%thumbnailsPerRow)
+		yPos := thumbnailSize * float64(count/thumbnailsPerRow)
+
+		rect := shapes.NewRectangle(float32(xPos), float32(yPos), int(thumbnailSize), int(thumbnailSize))
+		// rect.SetTexture(file)
+		rectList = append(rectList, rect)
 	}
 }
 
@@ -156,8 +174,8 @@ func scrollCallback(window *glfw.Window, xoffset, yoffset float64) {
 
 func sizeCallback(window *glfw.Window, width int, height int) {
 	xScale := float64(width) / startWidth
-	yScale := float64(height) / startHeight
-	scale := math.Min(xScale, yScale)
+	// yScale := float64(height) / startHeight
+	scale := xScale
 
 	for _, rect := range rectList {
 		rect.Scale(float32(scale))
