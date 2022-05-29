@@ -3,7 +3,7 @@ package shapes
 const (
 	float32Size = 4
 	PointLen    = 3
-	ColourLen   = 3
+	ColourLen   = 4
 	TexCoordLen = 2
 
 	PointSize    = PointLen * float32Size
@@ -23,6 +23,7 @@ type Colour struct {
 	R float32
 	G float32
 	B float32
+	A float32
 }
 
 type TexCoord struct {
