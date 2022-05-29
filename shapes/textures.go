@@ -19,22 +19,28 @@ type Texture struct {
 	TexCoords []TexCoord
 }
 
-func NewTexture(filename string, imageChan chan *image.RGBA) (*Texture, error) {
+type ImageMessage struct {
+	Filename string
+	Rgba     *image.RGBA
+}
+
+func NewTexture(filename string, imageChan chan ImageMessage) (*Texture, error) {
 	go LoadImage(filename, imageChan)
 
-	rgba := <-imageChan
+	imageMessage := <-imageChan
 
-	texture := CreateTextureFromImageRgba(rgba)
+	texture := CreateTextureFromImageRgba(imageMessage.Rgba)
 
 	return texture, nil
 }
 
-func LoadImage(filename string, imageChan chan *image.RGBA) {
+func LoadImage(filename string, imageChan chan ImageMessage) {
 	loadedImage, err := os.Open(filename)
+	fmt.Printf("Loading %v\n", filename)
 
 	if err != nil {
 		fmt.Printf("Error loading image: %v\n", filename)
-		imageChan <- nil
+		imageChan <- ImageMessage{Filename: filename, Rgba: nil}
 	}
 
 	defer loadedImage.Close()
@@ -43,13 +49,14 @@ func LoadImage(filename string, imageChan chan *image.RGBA) {
 
 	if err != nil {
 		fmt.Printf("Error decoding image: %v\n", filename)
-		imageChan <- nil
+		imageChan <- ImageMessage{Filename: filename, Rgba: nil}
 	}
 
 	rgba := image.NewRGBA(img.Bounds())
 	draw.Draw(rgba, rgba.Bounds(), img, image.Pt(0, 0), draw.Src)
 
-	imageChan <- rgba
+	fmt.Printf("Loaded  %v\n", filename)
+	imageChan <- ImageMessage{Filename: filename, Rgba: rgba}
 }
 
 func CreateTextureFromImageRgba(rgba *image.RGBA) *Texture {

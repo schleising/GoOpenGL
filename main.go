@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -31,6 +32,7 @@ var (
 	xLastDrag  float64
 	yLastDrag  float64
 	activeRect *shapes.Rectangle
+	imageChan  chan shapes.ImageMessage
 )
 
 func main() {
@@ -39,6 +41,7 @@ func main() {
 	homeFolder, err := os.UserHomeDir()
 
 	rectMap = make(map[string]*shapes.Rectangle)
+	imageChan = make(chan shapes.ImageMessage, 100)
 
 	if err != nil {
 		panic(err)
@@ -55,13 +58,22 @@ func main() {
 
 	generateThumbnails(currentFolder, width)
 
-	var count uint = 0
-
 	draw(window)
 
 	for !window.ShouldClose() {
-		time.Sleep(16 * time.Millisecond)
-		count++
+		select {
+		case imageMessage := <-imageChan:
+			fmt.Printf("Recieved %v\n", imageMessage.Filename)
+			texture := shapes.CreateTextureFromImageRgba(imageMessage.Rgba)
+			rect := rectMap[imageMessage.Filename]
+			rectWidth, rectHeight := rect.Size()
+			texture.SetTexCoords(rectWidth, rectHeight)
+			rect.SetTexCoords(texture)
+			rect.Handle = rect.MakeVao()
+			draw(window)
+		default:
+			time.Sleep(16 * time.Millisecond)
+		}
 		glfw.PollEvents()
 
 	}
@@ -81,7 +93,7 @@ func generateThumbnails(path string, windowWidth int) {
 		yPos := thumbnailSize * float64(count/thumbnailsPerRow)
 
 		rect := shapes.NewRectangle(float32(xPos), float32(yPos), int(thumbnailSize), int(thumbnailSize))
-		// rect.SetTexture(file)
+		rect.RequestTexture(file, imageChan)
 		rectMap[file] = rect
 	}
 }

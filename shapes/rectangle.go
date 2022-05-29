@@ -1,8 +1,6 @@
 package shapes
 
 import (
-	"image"
-
 	"github.com/go-gl/gl/v2.1/gl"
 	"github.com/go-gl/mathgl/mgl32"
 )
@@ -25,7 +23,7 @@ type Rectangle struct {
 	height   int
 	vertices []Vertex
 	indices  []uint32
-	handle   uint32
+	Handle   uint32
 	texture  uint32
 	scaleX   float32
 	scaleY   float32
@@ -43,7 +41,7 @@ func NewRectangle(x, y float32, width, height int) *Rectangle {
 	r.angle = 0
 	r.createVertices()
 	r.SetDefaultTexture()
-	r.handle = r.makeVao()
+	r.Handle = r.MakeVao()
 	return r
 }
 
@@ -97,7 +95,7 @@ func (r *Rectangle) createVertices() {
 	r.indices = []uint32{0, 1, 2, 0, 3, 2}
 }
 
-func (r *Rectangle) makeVao() uint32 {
+func (r *Rectangle) MakeVao() uint32 {
 	var vao uint32
 	gl.GenVertexArrays(1, &vao)
 	gl.BindVertexArray(vao)
@@ -134,7 +132,7 @@ func (r *Rectangle) makeVao() uint32 {
 func (r *Rectangle) SetDefaultTexture() {
 
 	if DefaultTexture == nil {
-		imageChan := make(chan *image.RGBA)
+		imageChan := make(chan ImageMessage)
 		var err error
 		DefaultTexture, err = NewTexture(defaultTextureLocation, imageChan)
 
@@ -146,6 +144,10 @@ func (r *Rectangle) SetDefaultTexture() {
 	}
 
 	r.SetTexCoords(DefaultTexture)
+}
+
+func (r *Rectangle) RequestTexture(filename string, imageChan chan ImageMessage) {
+	go LoadImage(filename, imageChan)
 }
 
 func (r *Rectangle) SetTexCoords(texture *Texture) {
@@ -166,7 +168,7 @@ func (r *Rectangle) Draw(program uint32) {
 
 	gl.UseProgram(program)
 
-	gl.BindVertexArray(r.handle)
+	gl.BindVertexArray(r.Handle)
 
 	scaleMat := mgl32.Scale3D(r.scaleX, r.scaleY, 0.0)
 	scale := gl.GetUniformLocation(program, gl.Str("scale"+"\x00"))
