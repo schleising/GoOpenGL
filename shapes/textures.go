@@ -19,12 +19,22 @@ type Texture struct {
 	TexCoords []TexCoord
 }
 
-func NewTexture(filename string) (*Texture, error) {
+func NewTexture(filename string, imageChan chan *image.RGBA) (*Texture, error) {
+	go LoadImage(filename, imageChan)
+
+	rgba := <-imageChan
+
+	texture := CreateTextureFromImageRgba(rgba)
+
+	return texture, nil
+}
+
+func LoadImage(filename string, imageChan chan *image.RGBA) {
 	loadedImage, err := os.Open(filename)
 
 	if err != nil {
 		fmt.Printf("Error loading image: %v\n", filename)
-		return nil, err
+		imageChan <- nil
 	}
 
 	defer loadedImage.Close()
@@ -33,15 +43,13 @@ func NewTexture(filename string) (*Texture, error) {
 
 	if err != nil {
 		fmt.Printf("Error decoding image: %v\n", filename)
-		return nil, err
+		imageChan <- nil
 	}
 
 	rgba := image.NewRGBA(img.Bounds())
 	draw.Draw(rgba, rgba.Bounds(), img, image.Pt(0, 0), draw.Src)
 
-	texture := CreateTextureFromImageRgba(rgba)
-
-	return texture, nil
+	imageChan <- rgba
 }
 
 func CreateTextureFromImageRgba(rgba *image.RGBA) *Texture {
