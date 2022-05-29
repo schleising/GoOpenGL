@@ -1,8 +1,6 @@
 package shapes
 
 import (
-	"fmt"
-
 	"github.com/go-gl/gl/v2.1/gl"
 	"github.com/go-gl/mathgl/mgl32"
 )
@@ -134,7 +132,6 @@ func (r *Rectangle) makeVao() uint32 {
 func (r *Rectangle) SetDefaultTexture() {
 
 	if DefaultTexture == nil {
-		fmt.Println("Creating Default Texture")
 		var err error
 		DefaultTexture, err = NewTexture(defaultTextureLocation)
 
